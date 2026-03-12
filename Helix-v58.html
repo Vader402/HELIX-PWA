@@ -29437,6 +29437,12 @@ function openCliqueModal(id){
         </div>
       </div>
       <div class="hx-build-queue" id="cliqueBuildQueue"></div>
+      <div id="cliqueCascadeRow" class="evt-cascade-row" style="display:none;padding:0 20px 16px">
+        <button class="evt-cascade-btn" id="cliqueCascadeBtn" onclick="cascadeFromClique()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span id="cliqueCascadeLabel">Plan a Gathering</span>
+        </button>
+      </div>
       <button class="hx-delete-btn hidden" id="cliqueDelBtn" onclick="deleteClique()">DELETE CLIQUE</button>
     `;
     document.body.appendChild(modal);
@@ -29495,6 +29501,7 @@ function openCliqueModal(id){
   renderCliqueMemberList();
   setCliqueField(0);
   modal.classList.add('open');
+  document.getElementById('cliqueCascadeRow').style.display = !!id ? 'block' : 'none';
   setTimeout(() => document.getElementById('cliqueNameInput').focus(), 100);
 }
 
@@ -29935,6 +29942,12 @@ function openPlaceModal(id){
           </div>
         </div>
       </div>
+      <div id="placeCascadeRow" class="evt-cascade-row" style="display:none;padding:0 20px 16px">
+        <button class="evt-cascade-btn" id="placeCascadeBtn" onclick="cascadeFromPlace()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span id="placeCascadeLabel">Plan a Visit</span>
+        </button>
+      </div>
       <button class="hx-delete-btn hidden" id="placeDelBtn" onclick="deletePlace()">DELETE PLACE</button>
     `;
     document.body.appendChild(modal);
@@ -29990,6 +30003,7 @@ function openPlaceModal(id){
   updatePlaceCardPreview();
   setPlaceField(0);
   modal.classList.add('open');
+  document.getElementById('placeCascadeRow').style.display = !!id ? 'block' : 'none';
   setTimeout(() => document.getElementById('placeNameInput').focus(), 100);
 }
 
@@ -30370,6 +30384,12 @@ function openFunctionModal(id){
           </div>
         </div>
       </div>
+      <div id="funcCascadeRow" class="evt-cascade-row" style="display:none;padding:0 20px 16px">
+        <button class="evt-cascade-btn" id="funcCascadeBtn" onclick="cascadeFromFunction()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span id="funcCascadeLabel">Create Planning Tasks</span>
+        </button>
+      </div>
       <button class="hx-delete-btn hidden" id="funcDelBtn" onclick="deleteFunction()">DELETE FUNCTION</button>
     `;
     document.body.appendChild(modal);
@@ -30433,6 +30453,7 @@ function openFunctionModal(id){
   renderFuncGuestList();
   setFuncField(0);
   modal.classList.add('open');
+  document.getElementById('funcCascadeRow').style.display = !!id ? 'block' : 'none';
   setTimeout(() => document.getElementById('funcNameInput').focus(), 100);
 }
 
@@ -31020,6 +31041,12 @@ function openDateModal(id){
           </div>
         </div>
       </div>
+      <div id="dateCascadeRow" class="evt-cascade-row" style="display:none;padding:0 20px 16px">
+        <button class="evt-cascade-btn" id="dateCascadeBtn" onclick="cascadeFromDate()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span id="dateCascadeLabel">Add to Calendar</span>
+        </button>
+      </div>
       <button class="hx-delete-btn hidden" id="dateDelBtn" onclick="deleteDate()">DELETE DATE</button>
     `;
     document.body.appendChild(modal);
@@ -31085,6 +31112,7 @@ function openDateModal(id){
   updateDateCardPreview();
   setDateField(0);
   modal.classList.add('open');
+  document.getElementById('dateCascadeRow').style.display = !!id ? 'block' : 'none';
 }
 
 function closeDateModal(){
@@ -31576,6 +31604,12 @@ function openQuestModal(id){
           </div>
         </div>
       </div>
+      <div id="questCascadeRow" class="evt-cascade-row" style="display:none;padding:0 20px 16px">
+        <button class="evt-cascade-btn" id="questCascadeBtn" onclick="cascadeFromQuest()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          <span id="questCascadeLabel">Create Next Step</span>
+        </button>
+      </div>
       <button class="hx-delete-btn hidden" id="questDelBtn" onclick="deleteQuest()">DELETE QUEST</button>
     `;
     document.body.appendChild(modal);
@@ -31638,6 +31672,7 @@ function openQuestModal(id){
   updateQuestCardPreview();
   setQuestField(0);
   modal.classList.add('open');
+  document.getElementById('questCascadeRow').style.display = !!id ? 'block' : 'none';
   setTimeout(() => document.getElementById('questNameInput').focus(), 100);
 }
 
@@ -32010,7 +32045,131 @@ function saveQuestProgress(id){
   // FULL SUB-DESTINATION MAP — Every relationship defined
   // Default action is index 0 in each array
   // ══════════════════════════════════════════════════════════
-  
+
+function cascadeFromClique(){
+  const id = document.getElementById('cliqueId').value;
+  const clique = (S.cliques || []).find(x => x.id === id);
+  if(!clique) return;
+
+  // Create a gathering event
+  S.events = S.events || [];
+  S.events.push({
+    id: uid(),
+    date: new Date(Date.now() + clique.gatheringFrequency * 24*60*60*1000).toISOString().split('T')[0],
+    time: '18:00',
+    type: 'personal',
+    title: (clique.emoji || '') + ' ' + clique.name + ' Gathering',
+    notes: 'Members: ' + (clique.contacts || []).map(c => {
+      const contact = (S.contacts || []).find(x => x.id === c);
+      return contact ? contact.name : c;
+    }).join(', '),
+    cliqueId: clique.id
+  });
+  save();
+  closeCliqueModal();
+  toast('Gathering scheduled');
+  haptic && haptic('success');
+  updateOrb && updateOrb();
+}
+
+function cascadeFromPlace(){
+  const id = document.getElementById('placeId').value;
+  const place = (S.places || []).find(x => x.id === id);
+  if(!place) return;
+
+  // Create a visit event
+  S.events = S.events || [];
+  S.events.push({
+    id: uid(),
+    date: new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0],
+    time: '12:00',
+    type: 'personal',
+    title: 'Visit: ' + place.name,
+    notes: (place.address || '') + (place.notes ? '\n' + place.notes : ''),
+    placeId: place.id
+  });
+  save();
+  closePlaceModal();
+  toast('Visit planned');
+  haptic && haptic('success');
+  updateOrb && updateOrb();
+}
+
+function cascadeFromFunction(){
+  const id = document.getElementById('funcId').value;
+  const func = (S.functions || []).find(x => x.id === id);
+  if(!func) return;
+
+  // Create planning tasks
+  S.tasks = S.tasks || [];
+  const taskTitles = ['Plan venue/location', 'Send invites', 'Prep supplies'];
+  taskTitles.forEach(title => {
+    S.tasks.push({
+      id: uid(),
+      title: title + ': ' + func.name,
+      status: 'todo',
+      priority: 'normal',
+      type: 'personal',
+      functionId: func.id,
+      created: new Date().toISOString()
+    });
+  });
+  save();
+  closeFunctionModal();
+  toast('3 planning tasks created');
+  haptic && haptic('success');
+  renderTasks && renderTasks();
+}
+
+function cascadeFromDate(){
+  const id = document.getElementById('dateId').value;
+  const date = (S.dates || []).find(x => x.id === id);
+  if(!date) return;
+
+  // Create calendar event
+  S.events = S.events || [];
+  S.events.push({
+    id: uid(),
+    date: date.date || new Date(Date.now() + 3*24*60*60*1000).toISOString().split('T')[0],
+    time: date.time || '19:00',
+    type: 'personal',
+    title: date.title || 'Date Night',
+    notes: (date.venue ? 'Venue: ' + date.venue + '\n' : '') + (date.notes || ''),
+    dateId: date.id
+  });
+  save();
+  closeDateModal();
+  toast('Added to calendar');
+  haptic && haptic('success');
+  updateOrb && updateOrb();
+}
+
+function cascadeFromQuest(){
+  const id = document.getElementById('questId').value;
+  const quest = (S.quests || []).find(x => x.id === id);
+  if(!quest) return;
+
+  // Create next step task
+  const steps = quest.steps || [];
+  const nextStep = steps.find(s => !s.done);
+
+  S.tasks = S.tasks || [];
+  S.tasks.push({
+    id: uid(),
+    title: nextStep ? nextStep.text : 'Next step: ' + quest.title,
+    status: 'todo',
+    priority: quest.priority || 'normal',
+    type: 'personal',
+    questId: quest.id,
+    created: new Date().toISOString()
+  });
+  save();
+  closeQuestModal();
+  toast('Next step task created');
+  haptic && haptic('success');
+  renderTasks && renderTasks();
+}
+
   const subDestMap = {
     // ── NOTE → destinations ──
     'note-email': [
@@ -32234,6 +32393,99 @@ function saveQuestProgress(id){
     'invoice-notes': [
       { key: 'paymentNote', label: 'Payment Note', icon: '✎', desc: 'Payment details' },
       { key: 'clientNote', label: 'Client Note', icon: '👤', desc: 'Client context' }
+    ],
+
+    // ══════════════════════════════════════════════════════════
+    // PERSONALS DESTINATIONS
+    // ══════════════════════════════════════════════════════════
+
+    // ── CLIQUE → destinations ──
+    'clique-email': [
+      { key: 'groupEmail', label: 'Group Email', icon: '✉', desc: 'Email all members' }
+    ],
+    'clique-schedule': [
+      { key: 'planGathering', label: 'Plan Gathering', icon: '📅', desc: 'Schedule group event' },
+      { key: 'reminder', label: 'Reminder', icon: '⏰', desc: 'Touch base reminder' }
+    ],
+    'clique-tasks': [
+      { key: 'groupTask', label: 'Group Task', icon: '☑', desc: 'Task for the group' },
+      { key: 'reachOut', label: 'Reach Out', icon: '📱', desc: 'Contact reminder' }
+    ],
+    'clique-notes': [
+      { key: 'cliqueNotes', label: 'Clique Notes', icon: '✎', desc: 'Notes about group' }
+    ],
+    'clique-crm': [
+      { key: 'linkProspect', label: 'Link Prospect', icon: '🔗', desc: 'Connect to prospect' }
+    ],
+
+    // ── PLACE → destinations ──
+    'place-email': [
+      { key: 'emailAbout', label: 'Email About', icon: '✉', desc: 'Share place info' }
+    ],
+    'place-schedule': [
+      { key: 'planVisit', label: 'Plan Visit', icon: '📅', desc: 'Schedule visit' },
+      { key: 'reminder', label: 'Reminder', icon: '⏰', desc: 'Visit reminder' }
+    ],
+    'place-tasks': [
+      { key: 'visitTask', label: 'Visit Task', icon: '☑', desc: 'Plan visit' },
+      { key: 'reviewTask', label: 'Write Review', icon: '✎', desc: 'Review after visit' }
+    ],
+    'place-notes': [
+      { key: 'placeNotes', label: 'Place Notes', icon: '✎', desc: 'Notes about place' }
+    ],
+    'place-crm': [
+      { key: 'linkProspect', label: 'Link Venue', icon: '🔗', desc: 'Link venue to prospect' }
+    ],
+
+    // ── FUNCTION → destinations ──
+    'function-email': [
+      { key: 'sendInvites', label: 'Send Invites', icon: '✉', desc: 'Email invitations' }
+    ],
+    'function-schedule': [
+      { key: 'addToCalendar', label: 'Add to Calendar', icon: '📅', desc: 'Schedule function' },
+      { key: 'reminder', label: 'Reminder', icon: '⏰', desc: 'Planning reminder' }
+    ],
+    'function-tasks': [
+      { key: 'planningTasks', label: 'Planning Tasks', icon: '☑', desc: 'Create planning tasks' },
+      { key: 'prepTask', label: 'Prep Task', icon: '📋', desc: 'Preparation task' }
+    ],
+    'function-notes': [
+      { key: 'functionNotes', label: 'Function Notes', icon: '✎', desc: 'Planning notes' }
+    ],
+    'function-crm': [
+      { key: 'linkProspect', label: 'Link Prospect', icon: '🔗', desc: 'Connect to prospect' }
+    ],
+
+    // ── DATE/ROMANCE → destinations ──
+    'date-schedule': [
+      { key: 'planDate', label: 'Plan Date', icon: '📅', desc: 'Schedule a date' },
+      { key: 'reminder', label: 'Reminder', icon: '⏰', desc: 'Date reminder' }
+    ],
+    'date-tasks': [
+      { key: 'planningTask', label: 'Planning Task', icon: '☑', desc: 'Date planning' },
+      { key: 'giftReminder', label: 'Gift Reminder', icon: '🎁', desc: 'Remember gift/occasion' }
+    ],
+    'date-notes': [
+      { key: 'dateNotes', label: 'Date Notes', icon: '✎', desc: 'Relationship notes' }
+    ],
+
+    // ── QUEST → destinations ──
+    'quest-email': [
+      { key: 'shareProgress', label: 'Share Progress', icon: '✉', desc: 'Email quest update' }
+    ],
+    'quest-schedule': [
+      { key: 'setMilestone', label: 'Set Milestone', icon: '📅', desc: 'Schedule milestone' },
+      { key: 'reminder', label: 'Reminder', icon: '⏰', desc: 'Quest reminder' }
+    ],
+    'quest-tasks': [
+      { key: 'questSteps', label: 'Quest Steps', icon: '☑', desc: 'Break into tasks' },
+      { key: 'nextStep', label: 'Next Step', icon: '▶', desc: 'Create next step' }
+    ],
+    'quest-notes': [
+      { key: 'questNotes', label: 'Quest Notes', icon: '✎', desc: 'Progress notes' }
+    ],
+    'quest-crm': [
+      { key: 'linkProspect', label: 'Link Prospect', icon: '🔗', desc: 'Connect to prospect' }
     ]
   };
   
@@ -32249,7 +32501,12 @@ function saveQuestProgress(id){
     'booking-bookings': true,
     'job-jobs': true,
     'invoice-invoices': true,
-    'contact-contacts': true
+    'contact-contacts': true,
+    'clique-cliques': true,
+    'place-places': true,
+    'function-functions': true,
+    'date-dates': true,
+    'quest-quests': true
   };
   
   function getElements(){
