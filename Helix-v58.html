@@ -11722,7 +11722,7 @@ body.crossroads-active {
         </div>
         
         <!-- SAVE button - always visible -->
-        <button class="hx-save-btn" id="bookingSaveBtn" onclick="saveBooking()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--green),#059669);border:none;border-radius:12px;font-family:Oswald;font-size:14px;letter-spacing:0.1em;color:white;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 20px var(--green-glow)">
+        <button class="hx-save-btn" id="bookingSaveBtn" onclick="saveBookingFromModal()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--green),#059669);border:none;border-radius:12px;font-family:Oswald;font-size:14px;letter-spacing:0.1em;color:white;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 20px var(--green-glow)">
           <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2"><polyline points="20 6 9 17 4 12"/></svg>
           SAVE BOOKING
         </button>
@@ -11973,7 +11973,7 @@ body.crossroads-active {
         </div>
         
         <!-- SAVE button - always visible -->
-        <button class="hx-save-btn" id="prospectSaveBtn" onclick="saveProspect()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--green),#059669);border:none;border-radius:12px;font-family:Oswald;font-size:14px;letter-spacing:0.1em;color:white;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 20px var(--green-glow)">
+        <button class="hx-save-btn" id="prospectSaveBtn" onclick="saveProspectFromModal()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--green),#059669);border:none;border-radius:12px;font-family:Oswald;font-size:14px;letter-spacing:0.1em;color:white;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 20px var(--green-glow)">
           <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2"><polyline points="20 6 9 17 4 12"/></svg>
           SAVE PROSPECT
         </button>
@@ -18352,18 +18352,34 @@ function saveProspectFromModal(){
   const id = document.getElementById('prospectId').value;
   const biz = document.getElementById('prospectBizInput').value.trim();
   if(!biz){ toast('Enter business name'); return; }
-  
+
+  const email = document.getElementById('prospectEmailInput').value.trim();
+  const phone = document.getElementById('prospectPhoneInput').value.trim();
+
+  // Duplicate detection for new prospects
+  if(!id){
+    const lowerBiz = biz.toLowerCase();
+    const lowerEmail = email.toLowerCase();
+    const dupe = (S.prospects || []).find(p => {
+      if(p.biz && p.biz.toLowerCase() === lowerBiz) return true;
+      if(lowerEmail && p.email && p.email.toLowerCase() === lowerEmail) return true;
+      if(phone && p.phone && p.phone === phone) return true;
+      return false;
+    });
+    if(dupe && !confirm('Possible duplicate of "' + dupe.biz + '". Add anyway?')) return;
+  }
+
   const data = {
     biz: biz,
     con: document.getElementById('prospectConInput').value.trim(),
-    phone: document.getElementById('prospectPhoneInput').value.trim(),
-    email: document.getElementById('prospectEmailInput').value.trim(),
+    phone: phone,
+    email: email,
     type: document.getElementById('prospectTypeVal').value || 'other',
     status: document.getElementById('prospectStatusVal').value || 'lead',
     followUp: document.getElementById('prospectFollowupInput').value || '',
     notes: document.getElementById('prospectNotesInput').value.trim() || ''
   };
-  
+
   let prospectId = id;
   if(id){
     const p = S.prospects.find(x => x.id === id);
@@ -18493,7 +18509,7 @@ function initProspectWheels(typeVal,statusVal){
     let html='<div style="height:27px"></div>'; // spacer
     types.forEach(t=>{
       const on=t.v===typeVal?'on':'';
-      html+=`<div class="prospect-type-item ${t.v} ${on}" data-value="${t.v}" onclick="selectProspectType(this,'fType')">${t.l}</div>`;
+      html+=`<div class="prospect-type-item ${t.v} ${on}" data-value="${t.v}" onclick="selectOldWheelType(this,'fType')">${t.l}</div>`;
     });
     html+='<div style="height:27px"></div>'; // spacer
     typeWheel.innerHTML=html;
@@ -18523,7 +18539,7 @@ function initProspectWheels(typeVal,statusVal){
     let html='<div style="height:27px"></div>'; // spacer
     statuses.forEach(s=>{
       const on=s.v===statusVal?'on':'';
-      html+=`<div class="prospect-type-item ${s.v} ${on}" data-value="${s.v}" onclick="selectProspectType(this,'fStatus')">${s.l}</div>`;
+      html+=`<div class="prospect-type-item ${s.v} ${on}" data-value="${s.v}" onclick="selectOldWheelType(this,'fStatus')">${s.l}</div>`;
     });
     html+='<div style="height:27px"></div>'; // spacer
     statusWheel.innerHTML=html;
@@ -18539,7 +18555,7 @@ function initProspectWheels(typeVal,statusVal){
   }
 }
 
-function selectProspectType(el,hiddenId){
+function selectOldWheelType(el,hiddenId){
   const wheel=el.parentElement;
   wheel.querySelectorAll('.prospect-type-item').forEach(x=>x.classList.remove('on'));
   el.classList.add('on');
