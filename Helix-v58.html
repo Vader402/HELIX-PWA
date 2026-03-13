@@ -5699,23 +5699,30 @@ body.screensaver .ring{animation:ambient 8s ease-in-out infinite}
   margin-bottom:4px;
 }
 .hx-queue-card{
-  background:linear-gradient(145deg, rgba(28,28,30,0.95) 0%, rgba(18,18,20,0.98) 100%);
-  border:1px solid rgba(255,255,255,0.06);
-  border-left:3px solid var(--modal-accent, var(--amber));
+  position:relative;
   border-radius:14px;
-  padding:16px;
-  display:flex;
-  align-items:center;
-  gap:14px;
+  overflow:hidden;
   cursor:grab;
   transition:all 0.2s;
   box-shadow:0 4px 20px rgba(0,0,0,0.4);
 }
+.hx-queue-card .prospect-card{
+  margin:0;
+  border-radius:14px 14px 0 0;
+}
 .hx-queue-card:active{
   cursor:grabbing;
   transform:scale(1.02);
-  border-color:var(--modal-accent, var(--amber));
   box-shadow:0 0 25px var(--modal-glow, var(--amber-glow));
+}
+.hx-queue-card-overlay{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  padding:10px 16px;
+  background:linear-gradient(145deg, rgba(20,20,22,0.98) 0%, rgba(12,12,14,0.98) 100%);
+  border-top:1px solid rgba(255,255,255,0.04);
 }
 .hx-queue-card-dot{
   width:10px;
@@ -28993,8 +29000,10 @@ function addToBuildQueue(type, id, title, meta, color){
   const existing = queue.querySelector(`[data-id="${id}"]`);
   if(existing){
     // Update existing card
-    existing.querySelector('.hx-queue-card-title').textContent = title;
-    existing.querySelector('.hx-queue-card-meta').textContent = meta;
+    const nameEl = existing.querySelector('.card-name') || existing.querySelector('.hx-queue-card-title');
+    const metaEl = existing.querySelector('.card-meta') || existing.querySelector('.hx-queue-card-meta');
+    if(nameEl) nameEl.textContent = title;
+    if(metaEl) metaEl.textContent = meta;
     return;
   }
   
@@ -29004,15 +29013,18 @@ function addToBuildQueue(type, id, title, meta, color){
   card.dataset.sourceType = type;
   card.dataset.id = id;
   card.style.cssText = `--modal-accent:var(--${color});--modal-glow:var(--${color}-glow)`;
+
+  // Render as panel-style prospect-card (how it will look when placed)
   card.innerHTML = `
-    <div class="hx-queue-card-dot" style="background:var(--${color})"></div>
-    <div class="hx-queue-card-info">
-      <div class="hx-queue-card-title">${title}</div>
-      <div class="hx-queue-card-meta">${meta}</div>
+    <div class="prospect-card" style="border-left:3px solid var(--${color});margin:0;pointer-events:none">
+      <div class="card-header">
+        <span class="card-name" style="color:var(--${color})">${title}</span>
+      </div>
+      <div class="card-meta">${meta}</div>
     </div>
-    <div class="hx-queue-card-actions">
+    <div class="hx-queue-card-overlay">
       <button class="hx-queue-save-btn" onclick="event.stopPropagation(); saveQueueCardHere('${type}', '${id}')">SAVE HERE</button>
-      <div class="hx-queue-card-hint">or DRAG</div>
+      <div class="hx-queue-card-hint">or DRAG to place</div>
     </div>
   `;
   
@@ -29072,8 +29084,8 @@ function startQueueCardDrag(card, type, e){
   // Get card data
   const id = card.dataset.id;
   const sourceType = card.dataset.sourceType || type;
-  const title = card.querySelector('.hx-queue-card-title')?.textContent || 'Item';
-  const meta = card.querySelector('.hx-queue-card-meta')?.textContent || '';
+  const title = card.querySelector('.card-name')?.textContent || card.querySelector('.hx-queue-card-title')?.textContent || 'Item';
+  const meta = card.querySelector('.card-meta')?.textContent || card.querySelector('.hx-queue-card-meta')?.textContent || '';
   
   // Find the actual data object
   let sourceData = {};
@@ -29429,6 +29441,7 @@ function openCliqueModal(id){
               <div class="hx-wheel-item" data-cat="2" onclick="setCliqueField(2)"><span class="hx-wheel-item-label">Members</span></div>
               <div class="hx-wheel-item" data-cat="3" onclick="setCliqueField(3)"><span class="hx-wheel-item-label">Frequency</span></div>
               <div class="hx-wheel-item" data-cat="4" onclick="setCliqueField(4)"><span class="hx-wheel-item-label">Notes</span></div>
+              <div class="hx-wheel-item save-item" onclick="saveCliqueAndMorph()"><span class="hx-wheel-item-label" style="color:var(--green)">✓ SAVE</span></div>
               <div class="hx-wheel-spacer"></div>
             </div>
             <div class="hx-wheel-frame"></div>
@@ -29450,17 +29463,22 @@ function openCliqueModal(id){
     // Wire wheel scroll
     const wheel = document.getElementById('cliqueCatWheel');
     wheel.addEventListener('scroll', () => {
-      const items = wheel.querySelectorAll('.hx-wheel-item');
-      const wheelRect = wheel.getBoundingClientRect();
-      const centerY = wheelRect.top + wheelRect.height / 2;
-      let closest = 0, minDist = Infinity;
-      items.forEach((item, i) => {
-        const rect = item.getBoundingClientRect();
-        const itemCenter = rect.top + rect.height / 2;
-        const dist = Math.abs(itemCenter - centerY);
-        if(dist < minDist){ minDist = dist; closest = i; }
+      updateCliqueWheelFrame();
+      const items = wheel.querySelectorAll('.hx-wheel-item[data-cat]');
+      const rect = wheel.getBoundingClientRect();
+      const centerY = rect.top + rect.height / 2;
+      let closest = null, closestDist = Infinity;
+      items.forEach(item => {
+        const r = item.getBoundingClientRect();
+        const dist = Math.abs((r.top + r.height/2) - centerY);
+        if(dist < closestDist){ closestDist = dist; closest = item; }
       });
-      if(closest !== cliqueFieldIndex) setCliqueField(closest);
+      if(closest && closestDist < 40){
+        const idx = parseInt(closest.dataset.cat);
+        if(!isNaN(idx) && idx !== cliqueFieldIndex){
+          setCliqueField(idx);
+        }
+      }
     });
   }
   
@@ -29499,8 +29517,11 @@ function openCliqueModal(id){
   
   updateCliqueCardPreview();
   renderCliqueMemberList();
+  cliqueFieldIndex = -1;
   setCliqueField(0);
   modal.classList.add('open');
+  scrollCliqueCatWheelTo(0);
+  setTimeout(() => updateCliqueWheelFrame(), 100);
   document.getElementById('cliqueCascadeRow').style.display = !!id ? 'block' : 'none';
   setTimeout(() => document.getElementById('cliqueNameInput').focus(), 100);
 }
@@ -29513,6 +29534,7 @@ function closeCliqueModal(){
 }
 
 function setCliqueField(idx){
+  if(cliqueFieldIndex === idx) return;
   cliqueFieldIndex = idx;
   CLIQUE_FIELDS.forEach((f, i) => {
     const el = document.getElementById(f);
@@ -29520,6 +29542,31 @@ function setCliqueField(idx){
   });
   document.querySelectorAll('#cliqueCatWheel .hx-wheel-item').forEach((item, i) => {
     item.classList.toggle('selected', i === idx);
+  });
+}
+
+function scrollCliqueCatWheelTo(idx){
+  const wheel = document.getElementById('cliqueCatWheel');
+  if(!wheel) return;
+  const itemHeight = 60;
+  const spacerHeight = wheel.querySelector('.hx-wheel-spacer')?.offsetHeight || 0;
+  const targetScroll = spacerHeight + (idx * itemHeight) - (wheel.offsetHeight / 2) + (itemHeight / 2);
+  wheel.scrollTop = Math.max(0, targetScroll);
+  setTimeout(() => updateCliqueWheelFrame(), 50);
+}
+
+function updateCliqueWheelFrame(){
+  const wheel = document.getElementById('cliqueCatWheel');
+  if(!wheel) return;
+  const items = wheel.querySelectorAll('.hx-wheel-item');
+  const wheelRect = wheel.getBoundingClientRect();
+  const centerY = wheelRect.top + wheelRect.height / 2;
+  const frameHeight = 60;
+  items.forEach(item => {
+    const r = item.getBoundingClientRect();
+    const itemCenter = r.top + r.height / 2;
+    const inFrame = Math.abs(itemCenter - centerY) < frameHeight / 2;
+    item.classList.toggle('in-frame', inFrame);
   });
 }
 
@@ -29541,7 +29588,9 @@ function updateCliqueCardPreview(){
   
   document.getElementById('cliqueCardTitle').textContent = name || 'New Clique';
   document.getElementById('cliqueCardMeta').textContent = members.length > 0 ? `${emoji} ${members.length} members` : 'Add members';
-  document.getElementById('cliqueSaveHint').classList.toggle('hidden', !name);
+  const hint = document.getElementById('cliqueSaveHint'); if(hint){ hint.classList.toggle('hidden', !name); hint.classList.toggle('visible', !!name); }
+  const card = document.getElementById('cliqueCard');
+  if(card) card.classList.toggle('ready', !!name);
 }
 
 function renderCliqueMemberList(){
@@ -29935,6 +29984,7 @@ function openPlaceModal(id){
               <div class="hx-wheel-item" data-cat="2" onclick="setPlaceField(2)"><span class="hx-wheel-item-label">Category</span></div>
               <div class="hx-wheel-item" data-cat="3" onclick="setPlaceField(3)"><span class="hx-wheel-item-label">Rating</span></div>
               <div class="hx-wheel-item" data-cat="4" onclick="setPlaceField(4)"><span class="hx-wheel-item-label">Notes</span></div>
+              <div class="hx-wheel-item save-item" onclick="savePlaceAndMorph()"><span class="hx-wheel-item-label" style="color:var(--green)">✓ SAVE</span></div>
               <div class="hx-wheel-spacer"></div>
             </div>
             <div class="hx-wheel-frame"></div>
@@ -29954,17 +30004,22 @@ function openPlaceModal(id){
     
     const wheel = document.getElementById('placeCatWheel');
     wheel.addEventListener('scroll', () => {
-      const items = wheel.querySelectorAll('.hx-wheel-item');
-      const wheelRect = wheel.getBoundingClientRect();
-      const centerY = wheelRect.top + wheelRect.height / 2;
-      let closest = 0, minDist = Infinity;
-      items.forEach((item, i) => {
-        const rect = item.getBoundingClientRect();
-        const itemCenter = rect.top + rect.height / 2;
-        const dist = Math.abs(itemCenter - centerY);
-        if(dist < minDist){ minDist = dist; closest = i; }
+      updatePlaceWheelFrame();
+      const items = wheel.querySelectorAll('.hx-wheel-item[data-cat]');
+      const rect = wheel.getBoundingClientRect();
+      const centerY = rect.top + rect.height / 2;
+      let closest = null, closestDist = Infinity;
+      items.forEach(item => {
+        const r = item.getBoundingClientRect();
+        const dist = Math.abs((r.top + r.height/2) - centerY);
+        if(dist < closestDist){ closestDist = dist; closest = item; }
       });
-      if(closest !== placeFieldIndex) setPlaceField(closest);
+      if(closest && closestDist < 40){
+        const idx = parseInt(closest.dataset.cat);
+        if(!isNaN(idx) && idx !== placeFieldIndex){
+          setPlaceField(idx);
+        }
+      }
     });
   }
   
@@ -30001,8 +30056,11 @@ function openPlaceModal(id){
   }
   
   updatePlaceCardPreview();
+  placeFieldIndex = -1;
   setPlaceField(0);
   modal.classList.add('open');
+  scrollPlaceCatWheelTo(0);
+  setTimeout(() => updatePlaceWheelFrame(), 100);
   document.getElementById('placeCascadeRow').style.display = !!id ? 'block' : 'none';
   setTimeout(() => document.getElementById('placeNameInput').focus(), 100);
 }
@@ -30015,6 +30073,7 @@ function closePlaceModal(){
 }
 
 function setPlaceField(idx){
+  if(placeFieldIndex === idx) return;
   placeFieldIndex = idx;
   PLACE_FIELDS.forEach((f, i) => {
     const el = document.getElementById(f);
@@ -30022,6 +30081,31 @@ function setPlaceField(idx){
   });
   document.querySelectorAll('#placeCatWheel .hx-wheel-item').forEach((item, i) => {
     item.classList.toggle('selected', i === idx);
+  });
+}
+
+function scrollPlaceCatWheelTo(idx){
+  const wheel = document.getElementById('placeCatWheel');
+  if(!wheel) return;
+  const itemHeight = 60;
+  const spacerHeight = wheel.querySelector('.hx-wheel-spacer')?.offsetHeight || 0;
+  const targetScroll = spacerHeight + (idx * itemHeight) - (wheel.offsetHeight / 2) + (itemHeight / 2);
+  wheel.scrollTop = Math.max(0, targetScroll);
+  setTimeout(() => updatePlaceWheelFrame(), 50);
+}
+
+function updatePlaceWheelFrame(){
+  const wheel = document.getElementById('placeCatWheel');
+  if(!wheel) return;
+  const items = wheel.querySelectorAll('.hx-wheel-item');
+  const wheelRect = wheel.getBoundingClientRect();
+  const centerY = wheelRect.top + wheelRect.height / 2;
+  const frameHeight = 60;
+  items.forEach(item => {
+    const r = item.getBoundingClientRect();
+    const itemCenter = r.top + r.height / 2;
+    const inFrame = Math.abs(itemCenter - centerY) < frameHeight / 2;
+    item.classList.toggle('in-frame', inFrame);
   });
 }
 
@@ -30052,7 +30136,9 @@ function updatePlaceCardPreview(){
   
   document.getElementById('placeCardTitle').textContent = name || 'New Place';
   document.getElementById('placeCardMeta').textContent = (catIcons[category] || '📍') + ' ' + (rating > 0 ? '⭐'.repeat(rating) : 'No rating');
-  document.getElementById('placeSaveHint').classList.toggle('hidden', !name);
+  const hint = document.getElementById('placeSaveHint'); if(hint){ hint.classList.toggle('hidden', !name); hint.classList.toggle('visible', !!name); }
+  const card = document.getElementById('placeCard');
+  if(card) card.classList.toggle('ready', !!name);
 }
 
 function handlePlaceCardTap(e){
@@ -30377,6 +30463,7 @@ function openFunctionModal(id){
               <div class="hx-wheel-item" data-cat="3" onclick="setFuncField(3)"><span class="hx-wheel-item-label">Type</span></div>
               <div class="hx-wheel-item" data-cat="4" onclick="setFuncField(4)"><span class="hx-wheel-item-label">Guests</span></div>
               <div class="hx-wheel-item" data-cat="5" onclick="setFuncField(5)"><span class="hx-wheel-item-label">Notes</span></div>
+              <div class="hx-wheel-item save-item" onclick="saveFuncAndMorph()"><span class="hx-wheel-item-label" style="color:var(--green)">✓ SAVE</span></div>
               <div class="hx-wheel-spacer"></div>
             </div>
             <div class="hx-wheel-frame"></div>
@@ -30396,17 +30483,22 @@ function openFunctionModal(id){
     
     const wheel = document.getElementById('funcCatWheel');
     wheel.addEventListener('scroll', () => {
-      const items = wheel.querySelectorAll('.hx-wheel-item');
-      const wheelRect = wheel.getBoundingClientRect();
-      const centerY = wheelRect.top + wheelRect.height / 2;
-      let closest = 0, minDist = Infinity;
-      items.forEach((item, i) => {
-        const rect = item.getBoundingClientRect();
-        const itemCenter = rect.top + rect.height / 2;
-        const dist = Math.abs(itemCenter - centerY);
-        if(dist < minDist){ minDist = dist; closest = i; }
+      updateFuncWheelFrame();
+      const items = wheel.querySelectorAll('.hx-wheel-item[data-cat]');
+      const rect = wheel.getBoundingClientRect();
+      const centerY = rect.top + rect.height / 2;
+      let closest = null, closestDist = Infinity;
+      items.forEach(item => {
+        const r = item.getBoundingClientRect();
+        const dist = Math.abs((r.top + r.height/2) - centerY);
+        if(dist < closestDist){ closestDist = dist; closest = item; }
       });
-      if(closest !== funcFieldIndex) setFuncField(closest);
+      if(closest && closestDist < 40){
+        const idx = parseInt(closest.dataset.cat);
+        if(!isNaN(idx) && idx !== funcFieldIndex){
+          setFuncField(idx);
+        }
+      }
     });
   }
   
@@ -30451,8 +30543,11 @@ function openFunctionModal(id){
   
   updateFuncCardPreview();
   renderFuncGuestList();
+  funcFieldIndex = -1;
   setFuncField(0);
   modal.classList.add('open');
+  scrollFuncCatWheelTo(0);
+  setTimeout(() => updateFuncWheelFrame(), 100);
   document.getElementById('funcCascadeRow').style.display = !!id ? 'block' : 'none';
   setTimeout(() => document.getElementById('funcNameInput').focus(), 100);
 }
@@ -30465,6 +30560,7 @@ function closeFunctionModal(){
 }
 
 function setFuncField(idx){
+  if(funcFieldIndex === idx) return;
   funcFieldIndex = idx;
   FUNC_FIELDS.forEach((f, i) => {
     const el = document.getElementById(f);
@@ -30472,6 +30568,31 @@ function setFuncField(idx){
   });
   document.querySelectorAll('#funcCatWheel .hx-wheel-item').forEach((item, i) => {
     item.classList.toggle('selected', i === idx);
+  });
+}
+
+function scrollFuncCatWheelTo(idx){
+  const wheel = document.getElementById('funcCatWheel');
+  if(!wheel) return;
+  const itemHeight = 60;
+  const spacerHeight = wheel.querySelector('.hx-wheel-spacer')?.offsetHeight || 0;
+  const targetScroll = spacerHeight + (idx * itemHeight) - (wheel.offsetHeight / 2) + (itemHeight / 2);
+  wheel.scrollTop = Math.max(0, targetScroll);
+  setTimeout(() => updateFuncWheelFrame(), 50);
+}
+
+function updateFuncWheelFrame(){
+  const wheel = document.getElementById('funcCatWheel');
+  if(!wheel) return;
+  const items = wheel.querySelectorAll('.hx-wheel-item');
+  const wheelRect = wheel.getBoundingClientRect();
+  const centerY = wheelRect.top + wheelRect.height / 2;
+  const frameHeight = 60;
+  items.forEach(item => {
+    const r = item.getBoundingClientRect();
+    const itemCenter = r.top + r.height / 2;
+    const inFrame = Math.abs(itemCenter - centerY) < frameHeight / 2;
+    item.classList.toggle('in-frame', inFrame);
   });
 }
 
@@ -30489,7 +30610,9 @@ function updateFuncCardPreview(){
   
   document.getElementById('funcCardTitle').textContent = name || 'New Function';
   document.getElementById('funcCardMeta').textContent = (typeIcons[type] || '🎊') + ' ' + (date || 'Set date');
-  document.getElementById('funcSaveHint').classList.toggle('hidden', !name);
+  const hint = document.getElementById('funcSaveHint'); if(hint){ hint.classList.toggle('hidden', !name); hint.classList.toggle('visible', !!name); }
+  const card = document.getElementById('funcCard');
+  if(card) card.classList.toggle('ready', !!name);
 }
 
 function renderFuncGuestList(){
@@ -31034,6 +31157,7 @@ function openDateModal(id){
               <div class="hx-wheel-item" data-cat="2" onclick="setDateField(2)"><span class="hx-wheel-item-label">With</span></div>
               <div class="hx-wheel-item" data-cat="3" onclick="setDateField(3)"><span class="hx-wheel-item-label">Where</span></div>
               <div class="hx-wheel-item" data-cat="4" onclick="setDateField(4)"><span class="hx-wheel-item-label">Notes</span></div>
+              <div class="hx-wheel-item save-item" onclick="saveDateAndMorph()"><span class="hx-wheel-item-label" style="color:var(--green)">✓ SAVE</span></div>
               <div class="hx-wheel-spacer"></div>
             </div>
             <div class="hx-wheel-frame"></div>
@@ -31053,17 +31177,22 @@ function openDateModal(id){
     
     const wheel = document.getElementById('dateCatWheel');
     wheel.addEventListener('scroll', () => {
-      const items = wheel.querySelectorAll('.hx-wheel-item');
-      const wheelRect = wheel.getBoundingClientRect();
-      const centerY = wheelRect.top + wheelRect.height / 2;
-      let closest = 0, minDist = Infinity;
-      items.forEach((item, i) => {
-        const rect = item.getBoundingClientRect();
-        const itemCenter = rect.top + rect.height / 2;
-        const dist = Math.abs(itemCenter - centerY);
-        if(dist < minDist){ minDist = dist; closest = i; }
+      updateDateWheelFrame();
+      const items = wheel.querySelectorAll('.hx-wheel-item[data-cat]');
+      const rect = wheel.getBoundingClientRect();
+      const centerY = rect.top + rect.height / 2;
+      let closest = null, closestDist = Infinity;
+      items.forEach(item => {
+        const r = item.getBoundingClientRect();
+        const dist = Math.abs((r.top + r.height/2) - centerY);
+        if(dist < closestDist){ closestDist = dist; closest = item; }
       });
-      if(closest !== dateFieldIndex) setDateField(closest);
+      if(closest && closestDist < 40){
+        const idx = parseInt(closest.dataset.cat);
+        if(!isNaN(idx) && idx !== dateFieldIndex){
+          setDateField(idx);
+        }
+      }
     });
   }
   
@@ -31110,8 +31239,11 @@ function openDateModal(id){
   }
   
   updateDateCardPreview();
+  dateFieldIndex = -1;
   setDateField(0);
   modal.classList.add('open');
+  scrollDateCatWheelTo(0);
+  setTimeout(() => updateDateWheelFrame(), 100);
   document.getElementById('dateCascadeRow').style.display = !!id ? 'block' : 'none';
 }
 
@@ -31123,6 +31255,7 @@ function closeDateModal(){
 }
 
 function setDateField(idx){
+  if(dateFieldIndex === idx) return;
   dateFieldIndex = idx;
   DATE_FIELDS.forEach((f, i) => {
     const el = document.getElementById(f);
@@ -31130,6 +31263,31 @@ function setDateField(idx){
   });
   document.querySelectorAll('#dateCatWheel .hx-wheel-item').forEach((item, i) => {
     item.classList.toggle('selected', i === idx);
+  });
+}
+
+function scrollDateCatWheelTo(idx){
+  const wheel = document.getElementById('dateCatWheel');
+  if(!wheel) return;
+  const itemHeight = 60;
+  const spacerHeight = wheel.querySelector('.hx-wheel-spacer')?.offsetHeight || 0;
+  const targetScroll = spacerHeight + (idx * itemHeight) - (wheel.offsetHeight / 2) + (itemHeight / 2);
+  wheel.scrollTop = Math.max(0, targetScroll);
+  setTimeout(() => updateDateWheelFrame(), 50);
+}
+
+function updateDateWheelFrame(){
+  const wheel = document.getElementById('dateCatWheel');
+  if(!wheel) return;
+  const items = wheel.querySelectorAll('.hx-wheel-item');
+  const wheelRect = wheel.getBoundingClientRect();
+  const centerY = wheelRect.top + wheelRect.height / 2;
+  const frameHeight = 60;
+  items.forEach(item => {
+    const r = item.getBoundingClientRect();
+    const itemCenter = r.top + r.height / 2;
+    const inFrame = Math.abs(itemCenter - centerY) < frameHeight / 2;
+    item.classList.toggle('in-frame', inFrame);
   });
 }
 
@@ -31147,7 +31305,9 @@ function updateDateCardPreview(){
   
   document.getElementById('dateCardTitle').textContent = idea || type.charAt(0).toUpperCase() + type.slice(1);
   document.getElementById('dateCardMeta').textContent = (typeIcons[type] || '💕') + ' ' + (date || 'Set date');
-  document.getElementById('dateSaveHint').classList.toggle('hidden', !idea && !date);
+  const hint = document.getElementById('dateSaveHint'); if(hint){ hint.classList.toggle('hidden', !idea && !date); hint.classList.toggle('visible', !!(idea || date)); }
+  const card = document.getElementById('dateCard');
+  if(card) card.classList.toggle('ready', !!(idea || date));
 }
 
 function showDatePartnerPicker(){
@@ -31597,6 +31757,7 @@ function openQuestModal(id){
               <div class="hx-wheel-item" data-cat="3" onclick="setQuestField(3)"><span class="hx-wheel-item-label">Progress</span></div>
               <div class="hx-wheel-item" data-cat="4" onclick="setQuestField(4)"><span class="hx-wheel-item-label">Partner</span></div>
               <div class="hx-wheel-item" data-cat="5" onclick="setQuestField(5)"><span class="hx-wheel-item-label">Notes</span></div>
+              <div class="hx-wheel-item save-item" onclick="saveQuestAndMorph()"><span class="hx-wheel-item-label" style="color:var(--green)">✓ SAVE</span></div>
               <div class="hx-wheel-spacer"></div>
             </div>
             <div class="hx-wheel-frame"></div>
@@ -31616,17 +31777,22 @@ function openQuestModal(id){
     
     const wheel = document.getElementById('questCatWheel');
     wheel.addEventListener('scroll', () => {
-      const items = wheel.querySelectorAll('.hx-wheel-item');
-      const wheelRect = wheel.getBoundingClientRect();
-      const centerY = wheelRect.top + wheelRect.height / 2;
-      let closest = 0, minDist = Infinity;
-      items.forEach((item, i) => {
-        const rect = item.getBoundingClientRect();
-        const itemCenter = rect.top + rect.height / 2;
-        const dist = Math.abs(itemCenter - centerY);
-        if(dist < minDist){ minDist = dist; closest = i; }
+      updateQuestWheelFrame();
+      const items = wheel.querySelectorAll('.hx-wheel-item[data-cat]');
+      const rect = wheel.getBoundingClientRect();
+      const centerY = rect.top + rect.height / 2;
+      let closest = null, closestDist = Infinity;
+      items.forEach(item => {
+        const r = item.getBoundingClientRect();
+        const dist = Math.abs((r.top + r.height/2) - centerY);
+        if(dist < closestDist){ closestDist = dist; closest = item; }
       });
-      if(closest !== questFieldIndex) setQuestField(closest);
+      if(closest && closestDist < 40){
+        const idx = parseInt(closest.dataset.cat);
+        if(!isNaN(idx) && idx !== questFieldIndex){
+          setQuestField(idx);
+        }
+      }
     });
   }
   
@@ -31670,8 +31836,11 @@ function openQuestModal(id){
   }
   
   updateQuestCardPreview();
+  questFieldIndex = -1;
   setQuestField(0);
   modal.classList.add('open');
+  scrollQuestCatWheelTo(0);
+  setTimeout(() => updateQuestWheelFrame(), 100);
   document.getElementById('questCascadeRow').style.display = !!id ? 'block' : 'none';
   setTimeout(() => document.getElementById('questNameInput').focus(), 100);
 }
@@ -31684,6 +31853,7 @@ function closeQuestModal(){
 }
 
 function setQuestField(idx){
+  if(questFieldIndex === idx) return;
   questFieldIndex = idx;
   QUEST_FIELDS.forEach((f, i) => {
     const el = document.getElementById(f);
@@ -31691,6 +31861,31 @@ function setQuestField(idx){
   });
   document.querySelectorAll('#questCatWheel .hx-wheel-item').forEach((item, i) => {
     item.classList.toggle('selected', i === idx);
+  });
+}
+
+function scrollQuestCatWheelTo(idx){
+  const wheel = document.getElementById('questCatWheel');
+  if(!wheel) return;
+  const itemHeight = 60;
+  const spacerHeight = wheel.querySelector('.hx-wheel-spacer')?.offsetHeight || 0;
+  const targetScroll = spacerHeight + (idx * itemHeight) - (wheel.offsetHeight / 2) + (itemHeight / 2);
+  wheel.scrollTop = Math.max(0, targetScroll);
+  setTimeout(() => updateQuestWheelFrame(), 50);
+}
+
+function updateQuestWheelFrame(){
+  const wheel = document.getElementById('questCatWheel');
+  if(!wheel) return;
+  const items = wheel.querySelectorAll('.hx-wheel-item');
+  const wheelRect = wheel.getBoundingClientRect();
+  const centerY = wheelRect.top + wheelRect.height / 2;
+  const frameHeight = 60;
+  items.forEach(item => {
+    const r = item.getBoundingClientRect();
+    const itemCenter = r.top + r.height / 2;
+    const inFrame = Math.abs(itemCenter - centerY) < frameHeight / 2;
+    item.classList.toggle('in-frame', inFrame);
   });
 }
 
@@ -31714,7 +31909,9 @@ function updateQuestCardPreview(){
   
   document.getElementById('questCardTitle').textContent = name || 'New Quest';
   document.getElementById('questCardMeta').textContent = (catIcons[category] || '🎯') + ' ' + progress + '% complete';
-  document.getElementById('questSaveHint').classList.toggle('hidden', !name);
+  const hint = document.getElementById('questSaveHint'); if(hint){ hint.classList.toggle('hidden', !name); hint.classList.toggle('visible', !!name); }
+  const card = document.getElementById('questCard');
+  if(card) card.classList.toggle('ready', !!name);
 }
 
 function showQuestPartnerPicker(){
