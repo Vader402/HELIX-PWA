@@ -35819,7 +35819,54 @@ function cascadeFromQuest(){
       S.invoices.push(inv);
       save(); toast('✓ Invoice for contact'); openPanel('invoices');
       setTimeout(() => { renderInvoices(); highlightNewCard(inv.id); }, 100);
-    }
+    },
+
+    // ═══ CROSS-LAYER: MISSION ↔ OTHERS ═══
+    'mission-services': function(data){ openPanel('services'); toast('View services for mission'); },
+    'mission-jobs': function(data){
+      const m = data.sourceData || {};
+      S.jobs = S.jobs || [];
+      const job = { id: uid(), title: m.title || data.name, status: 'pending', totalSeconds: 0, timeEntries: [], created: new Date().toISOString() };
+      S.jobs.push(job);
+      save(); toast('✓ Job from mission'); openPanel('jobs');
+      setTimeout(() => { renderJobs(); highlightNewCard(job.id); }, 100);
+    },
+    'mission-invoices': function(data){ openPanel('invoices'); toast('Select invoice for mission'); },
+    'mission-contacts': function(data){ openPanel('contacts'); toast('View contacts'); },
+    'mission-bookings': function(data){ openPanel('bookings'); toast('View bookings'); },
+    'mission-products': function(data){ openPanel('products'); toast('View products'); },
+
+    // ═══ CROSS-LAYER: CONTACT → LAYER 2 ═══
+    'contact-jobs': function(data){
+      const c = data.sourceData || {};
+      S.jobs = S.jobs || [];
+      const job = { id: uid(), title: 'Job: ' + (c.name || data.name), contactId: c.id, status: 'pending', totalSeconds: 0, timeEntries: [], created: new Date().toISOString() };
+      S.jobs.push(job);
+      save(); toast('✓ Job for contact'); openPanel('jobs');
+      setTimeout(() => { renderJobs(); highlightNewCard(job.id); }, 100);
+    },
+
+    // ═══ CROSS-LAYER: PERSONALS → LAYER 2 ═══
+    'clique-contacts': function(data){ openPanel('contacts'); toast('View contacts in clique'); },
+    'place-contacts': function(data){ openPanel('contacts'); toast('View contacts at this place'); },
+    'place-bookings': function(data){
+      const p = data.sourceData || {};
+      S.bookings = S.bookings || [];
+      const b = { id: uid(), venue: p.name, address: p.address, date: tomorrow(), status: 'pending', created: new Date().toISOString() };
+      S.bookings.push(b);
+      save(); toast('✓ Booking at ' + (p.name || 'place')); openPanel('bookings');
+      setTimeout(() => { renderBookings(); highlightNewCard(b.id); }, 100);
+    },
+    'function-contacts': function(data){ openPanel('contacts'); toast('View contacts for function'); },
+    'function-bookings': function(data){
+      const f = data.sourceData || {};
+      S.bookings = S.bookings || [];
+      const b = { id: uid(), title: f.name || data.name, date: f.date || tomorrow(), status: 'pending', created: new Date().toISOString() };
+      S.bookings.push(b);
+      save(); toast('✓ Booking for function'); openPanel('bookings');
+      setTimeout(() => { renderBookings(); highlightNewCard(b.id); }, 100);
+    },
+    'quest-contacts': function(data){ openPanel('contacts'); toast('View contacts for quest'); }
   };
   
   // ── Link picker modal ──
