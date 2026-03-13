@@ -19993,6 +19993,7 @@ function cascadeFromTask(){
   const title = document.getElementById('taskTitleInput').value.trim();
   const due = document.getElementById('taskDueInput').value;
   const time = document.getElementById('taskTimeInput').value;
+  const taskId = document.getElementById('taskId').value;
   saveTaskFromModal();
   S.events = S.events || [];
   S.events.push({
@@ -20001,6 +20002,7 @@ function cascadeFromTask(){
     time: time || '09:00',
     type: 'work',
     title: title,
+    taskId: taskId,
     done: false
   });
   save();
@@ -20505,6 +20507,7 @@ function cascadeFromProduct(){
   saveProduct();
   
   // If low stock, create reorder task
+  const productId = document.getElementById('productId').value;
   if(stock < 5){
     S.tasks = S.tasks || [];
     S.tasks.push({
@@ -20513,6 +20516,7 @@ function cascadeFromProduct(){
       status: 'todo',
       priority: 'high',
       type: 'production',
+      productId: productId,
       created: new Date().toISOString()
     });
     save();
@@ -27293,7 +27297,8 @@ function updateNoteCascade(){
 
 function cascadeFromNote(){
   const noteTitle = document.getElementById('noteTitleInput').value || 'Note';
-  
+  const noteId = document.getElementById('noteId') ? document.getElementById('noteId').value : '';
+
   switch(editingNoteType){
     case 'meeting':
     case 'call':
@@ -27305,25 +27310,35 @@ function cascadeFromNote(){
         title: `Follow up: ${noteTitle}`,
         priority: 'normal',
         status: 'pending',
-        linkedProspect: editingNoteProspectId || '',
+        prospectId: editingNoteProspectId || '',
+        noteId: noteId,
         created: new Date().toISOString()
       };
+      S.tasks = S.tasks || [];
       S.tasks.push(task);
       save();
-      toast('✓ Task created');
+      closeNoteModal();
+      toast('✓ Follow-up task created');
       break;
     default:
-      if(editingNoteProspectId){
-        // Open event editor linked to prospect
-        closeNoteModal();
-        const today = new Date().toISOString().split('T')[0];
-        openEvtEditor(null, today, 10);
-        document.getElementById('evtProspect').value = editingNoteProspectId;
-        document.getElementById('evtTitleInput').value = `Meeting: ${noteTitle}`;
-        updateEvtCardPreview();
-      }
+      // Create calendar event
+      S.events = S.events || [];
+      S.events.push({
+        id: uid(),
+        date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
+        time: '09:00',
+        type: editingNoteProspectId ? 'meeting' : 'personal',
+        title: noteTitle,
+        prospectId: editingNoteProspectId || '',
+        noteId: noteId,
+        done: false
+      });
+      save();
+      closeNoteModal();
+      toast('✓ Calendar event created');
+      break;
   }
-  
+
   document.getElementById('noteCascadeRow').style.display = 'none';
 }
 
@@ -32628,6 +32643,18 @@ function cascadeFromQuest(){
     'prospect-services':[{ key: 'createInvoice', label: 'Invoice', icon: '📄', desc: 'Invoice this prospect' }],
     'task-services':    [{ key: 'billableTask', label: 'Billable', icon: '💵', desc: 'Mark as billable' }],
     'event-services':   [{ key: 'logSession', label: 'Log Session', icon: '⏱', desc: 'Time from event' }],
+
+    // ── * → Jobs ──
+    'note-jobs':        [{ key: 'attachToJob', label: 'Attach to Job', icon: '📎', desc: 'Link note to a job' }],
+    'task-jobs':        [{ key: 'convertToJob', label: 'Convert to Job', icon: '🔧', desc: 'Create job from task' }],
+    'event-jobs':       [{ key: 'convertToJob', label: 'Convert to Job', icon: '🔧', desc: 'Create job from event' }],
+    'prospect-jobs':    [{ key: 'createJob', label: 'Create Job', icon: '🔧', desc: 'Start job for prospect' }],
+
+    // ── * → Invoices ──
+    'note-invoices':    [{ key: 'addToInvoice', label: 'Invoice from Note', icon: '📄', desc: 'Create invoice from note' }],
+    'task-invoices':    [{ key: 'addToInvoice', label: 'Invoice from Task', icon: '📄', desc: 'Create invoice from task' }],
+    'event-invoices':   [{ key: 'addToInvoice', label: 'Invoice from Event', icon: '📄', desc: 'Create invoice from event' }],
+    'prospect-invoices':[{ key: 'createInvoice', label: 'Create Invoice', icon: '📄', desc: 'Invoice this prospect' }],
     
     // ── * → Bookings ──
     'note-bookings':    [{ key: 'bookingNote', label: 'Booking Note', icon: '📝', desc: 'Note for booking' }],
@@ -35606,6 +35633,46 @@ function cascadeFromQuest(){
       setTimeout(() => { if(typeof openEvtEditor === 'function'){ openEvtEditor(null, q.deadline||today(), 10); setTimeout(() => { const t = document.getElementById('evtTitleInput'); if(t) t.value = 'Quest: '+(q.name||data.name); }, 100); } }, 200);
     },
     
+    // ═══ LAYER 1 → JOBS ═══
+    'note-jobs': function(data){
+      const n = data.sourceData || {};
+      let prospectId = n.prospectId || null;
+      if(!prospectId){
+        const matches = typeof findProspectMatches === 'function' ? findProspectMatches(n.title || data.name) : [];
+        if(matches.length > 0) prospectId = matches[0].prospect ? matches[0].prospect.id : matches[0].id;
+      }
+      S.jobs = S.jobs || [];
+      const job = { id: uid(), title: n.title || data.name, clientId: prospectId, noteId: n.id, status: 'pending', totalSeconds: 0, timeEntries: [], created: new Date().toISOString() };
+      S.jobs.push(job);
+      save(); toast('✓ Job created from note'); openPanel('jobs');
+      setTimeout(() => { renderJobs(); highlightNewCard(job.id); }, 100);
+    },
+    'task-jobs': function(data){
+      const t = data.sourceData || {};
+      S.jobs = S.jobs || [];
+      const job = { id: uid(), title: t.title || data.name, clientId: t.prospectId || null, taskId: t.id, status: 'pending', totalSeconds: 0, timeEntries: [], created: new Date().toISOString() };
+      S.jobs.push(job);
+      if(t.id){ const task = (S.tasks||[]).find(x => x.id === t.id); if(task) task.status = 'converted'; }
+      save(); toast('✓ Job created from task'); openPanel('jobs');
+      setTimeout(() => { renderJobs(); highlightNewCard(job.id); }, 100);
+    },
+    'event-jobs': function(data){
+      const e = data.sourceData || {};
+      S.jobs = S.jobs || [];
+      const job = { id: uid(), title: e.title || data.name, clientId: e.prospectId || null, eventId: e.id, scheduledDate: e.date, scheduledTime: e.time, status: 'pending', totalSeconds: 0, timeEntries: [], created: new Date().toISOString() };
+      S.jobs.push(job);
+      save(); toast('✓ Job created from event'); openPanel('jobs');
+      setTimeout(() => { renderJobs(); highlightNewCard(job.id); }, 100);
+    },
+    'prospect-jobs': function(data){
+      const p = data.sourceData || {};
+      S.jobs = S.jobs || [];
+      const job = { id: uid(), title: 'Job: ' + (p.biz || data.name), clientId: p.id, status: 'pending', totalSeconds: 0, timeEntries: [], created: new Date().toISOString() };
+      S.jobs.push(job);
+      save(); toast('✓ Job created for ' + (p.biz || data.name)); openPanel('jobs');
+      setTimeout(() => { renderJobs(); highlightNewCard(job.id); }, 100);
+    },
+
     // ═══ LAYER 1 → INVOICES ═══
     'prospect-invoices': function(data){
       const p = data.sourceData || {};
