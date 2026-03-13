@@ -1,6 +1,6 @@
 # HELIX COMPLETE FEATURE LIST
 ## For Claude Code: Audit, Fine-Tune, Add Missing
-### Last Updated: March 12, 2026 (v58)
+### Last Updated: March 12, 2026 (v58 — post-audit)
 
 ---
 
@@ -19,12 +19,12 @@ This document contains every feature Helix has (or should have) across all modul
 | Schedule | A- | Missing: Calendar sync |
 | Notes | A | Complete |
 | Connect (Email) | B+ | Missing: Tracking |
-| Products | B+ | Needs cascade polish |
-| Services | B+ | Needs cascade polish |
-| Bookings | B+ | Needs cascade polish |
-| Jobs | B | New - needs full wiring |
-| Invoices | B | New - needs full wiring |
-| Personals | C+ | Modals need building |
+| Products | A- | Cascades wired, crossroads complete |
+| Services | A- | Cascades wired, invoiceService() implemented |
+| Bookings | A- | Cascades wired, prospect auto-creation added |
+| Jobs | A- | Fully wired: crossroads, cascades, billable/rounding fixed |
+| Invoices | A- | Fully wired: tax/discount persist, PDF export, unified numbering |
+| Personals | A- | All 5 modals fully built (Card+Wheel), cascades + crossroads wired |
 | UI/UX | A+ | Complete |
 
 ---
@@ -44,9 +44,9 @@ This document contains every feature Helix has (or should have) across all modul
 | Tags & Labels | Categorize prospects | ✅ |
 | Search & Filter | Find prospects quickly | ✅ |
 | Star/Pin Favorites | Mark high-priority prospects | ✅ |
-| Duplicate Detection | Warn on similar contacts | ⚠️ Verify |
+| Duplicate Detection | Warn on similar contacts | ✅ Added |
 | Import/Export | CSV import, JSON export | ✅ |
-| Bulk Actions | Multi-select operations | ⚠️ Verify |
+| Bulk Actions | Multi-select operations | ❌ Not built (P2) |
 
 ### CRM Unique Features
 | Feature | Description | Status |
@@ -83,7 +83,7 @@ This document contains every feature Helix has (or should have) across all modul
 | Link to CRM Prospect | Associate task with contact | ✅ UNIQUE |
 | Create from Voice | Speak to add tasks | ✅ UNIQUE |
 | Mission System | 72 guided tasks across 12 weeks | ✅ UNIQUE |
-| Smart Contact Field | Show phone/email when type=call/email | ⚠️ Verify |
+| Smart Contact Field | Show phone/email when type=call/email | ✅ UNIQUE |
 | Action Item Extraction | Note → auto-suggest task | ✅ |
 
 ---
@@ -102,7 +102,7 @@ This document contains every feature Helix has (or should have) across all modul
 | Reminders | Push notification triggers | ⚠️ Service Worker needed |
 | Drag & Drop | Move events on calendar | ✅ |
 | Color Coding | By type or prospect | ✅ |
-| Conflict Detection | Warn on overlapping events | ⚠️ Verify |
+| Conflict Detection | Warn on overlapping events | ❌ Not built (P2) |
 
 ### Schedule Planned/Missing
 | Feature | Description | Status |
@@ -182,9 +182,9 @@ This document contains every feature Helix has (or should have) across all modul
 | Reorder Alerts | Low stock warnings | ✅ |
 | Product Categories | Organize by type | ✅ |
 | Product Images | Photo attachment | ✅ |
-| Price Variants | Multiple pricing tiers | ⚠️ Verify |
-| Crossroads Integration | Drag to other modules | ⚠️ Verify handlers |
-| Cascade Integration | Auto-actions on save | ⚠️ Verify |
+| Price Variants | Multiple pricing tiers | ❌ Not built (P3) |
+| Crossroads Integration | Drag to other modules | ✅ Complete |
+| Cascade Integration | Auto-actions on save | ✅ Complete (productId linked) |
 
 ### Services Module
 | Feature | Description | Status |
@@ -192,17 +192,17 @@ This document contains every feature Helix has (or should have) across all modul
 | Service Catalog | Name, rate, duration, description | ✅ |
 | Hourly/Flat Rates | Pricing options | ✅ |
 | Time Tracking | Log billable hours | ✅ |
-| Service → Job Flow | Create job from service | ⚠️ Verify cascade |
+| Service → Job Flow | Create job from service | ✅ cascadeFromService() |
 | Booking Configuration | Availability settings | ✅ |
 | Public Booking Page | Embeddable widget | ✅ Mode A |
-| Crossroads Integration | Drag to other modules | ⚠️ Verify handlers |
+| Crossroads Integration | Drag to other modules | ✅ Complete |
 
 ### Bookings Module
 | Feature | Description | Status |
 |---------|-------------|--------|
 | Booking Requests | Inbound scheduling | ✅ |
-| Booking → Event | Auto-create calendar event | ⚠️ Verify cascade |
-| Booking → Prospect | Auto-create CRM entry | ⚠️ Verify cascade |
+| Booking → Event | Auto-create calendar event | ✅ cascadeFromBooking() |
+| Booking → Prospect | Auto-create CRM entry | ✅ cascadeFromBooking() + smart match |
 | Booking Status | Pending/Confirmed/Completed | ✅ |
 | Availability Rules | Days, hours, buffer time | ✅ |
 
@@ -211,11 +211,12 @@ This document contains every feature Helix has (or should have) across all modul
 |---------|-------------|--------|
 | Job Creation | Title, service, prospect | ✅ |
 | Job Status | Not Started/In Progress/Complete | ✅ |
-| Billable Flag | Mark as invoiceable | ✅ |
-| Time Logging | Track hours on job | ⚠️ Verify |
-| Job → Invoice Flow | Generate invoice from job | ⚠️ Verify cascade |
-| Crossroads Integration | Drag to other modules | ❌ Missing handlers |
-| Cascade Integration | Auto-actions on save | ❌ Missing |
+| Billable Flag | Mark as invoiceable (saved + enforced) | ✅ Fixed |
+| Time Rounding | Round billable hours (1/6/15/30 min) | ✅ Fixed |
+| Time Logging | Track hours on job | ✅ |
+| Job → Invoice Flow | Generate invoice from job (with rounding) | ✅ Fixed |
+| Crossroads Integration | Drag to other modules (10 handlers) | ✅ Complete |
+| Cascade Integration | Auto-actions on save | ✅ Complete |
 
 ### Invoices Module
 | Feature | Description | Status |
@@ -224,10 +225,11 @@ This document contains every feature Helix has (or should have) across all modul
 | Line Items | Multiple items per invoice | ✅ |
 | Invoice Status | Draft/Sent/Paid/Overdue | ✅ |
 | Due Dates | Payment deadlines | ✅ |
+| Tax & Discount | Persisted to invoice, calculated in total | ✅ Fixed |
 | Invoice → Payment Link | Stripe/PayPal integration | ⚠️ Planned |
-| PDF Export | Downloadable invoice | ⚠️ Planned |
-| Crossroads Integration | Drag to other modules | ❌ Missing handlers |
-| Cascade Integration | Auto-actions on save | ❌ Missing |
+| PDF Export | Print-to-PDF via browser | ✅ Implemented |
+| Crossroads Integration | Drag to other modules (9 handlers) | ✅ Complete |
+| Cascade Integration | Auto-actions + job status update on send | ✅ Complete |
 
 ---
 
@@ -238,49 +240,56 @@ This document contains every feature Helix has (or should have) across all modul
 |---------|-------------|--------|
 | Personal Contacts | Non-business relationships | ✅ |
 | Relationship Type | Friend, Family, Acquaintance | ✅ |
-| Birthday Tracking | With reminders | ⚠️ Verify |
-| Contact Frequency | "Haven't talked in X days" | ⚠️ Verify |
-| Modal | Full card+wheel modal | ❌ Stub only |
+| Birthday Tracking | With reminders | ✅ Field in modal |
+| Contact Frequency | "Haven't talked in X days" | ✅ Field in modal |
+| Modal | Full card+wheel modal (7 fields) | ✅ Complete |
 
 ### Cliques
 | Feature | Description | Status |
 |---------|-------------|--------|
 | Friend Groups | College Crew, Work Friends, etc. | ✅ |
 | Group Members | Link to People | ✅ |
-| Group Events | Plan gatherings | ⚠️ Verify |
-| Modal | Full card+wheel modal | ❌ Stub only |
+| Group Events | Plan gatherings (cascade) | ✅ |
+| Crossroads | 5 destinations (email/schedule/crm/tasks/notes) | ✅ |
+| Modal | Full card+wheel modal (6 fields) | ✅ Complete |
 
 ### Places
 | Feature | Description | Status |
 |---------|-------------|--------|
 | Favorite Locations | Restaurants, bars, venues | ✅ |
 | Place Type | Restaurant, Bar, Park, etc. | ✅ |
-| Recommendations | "Take Sarah here" | ⚠️ Verify |
-| Modal | Full card+wheel modal | ❌ Stub only |
+| Recommendations | "Take Sarah here" | ✅ |
+| Crossroads | 5 destinations + contacts/bookings | ✅ |
+| Modal | Full card+wheel modal (6 fields) | ✅ Complete |
 
 ### Functions
 | Feature | Description | Status |
 |---------|-------------|--------|
 | Event Planning | Parties, gatherings | ✅ |
 | Planning Phases | Idea → Planning → Ready → Complete | ✅ |
-| Invitees | Who's coming | ⚠️ Verify |
-| Modal | Full card+wheel modal | ❌ Stub only |
+| Invitees | Who's coming (guests field) | ✅ |
+| Cascade | Creates 3 planning tasks | ✅ |
+| Crossroads | 5 destinations + contacts/bookings | ✅ |
+| Modal | Full card+wheel modal (7 fields) | ✅ Complete |
 
 ### Romance
 | Feature | Description | Status |
 |---------|-------------|--------|
 | Dating Tracker | People you're seeing | ✅ |
-| Date History | Log of dates | ⚠️ Verify |
-| Relationship Status | Dating → Exclusive → etc. | ⚠️ Verify |
-| Modal | Full card+wheel modal | ❌ Stub only |
+| Date History | Log of dates | ✅ |
+| Relationship Status | Dating → Exclusive → etc. | ✅ |
+| Crossroads | 5 destinations | ✅ |
+| Modal | Full card+wheel modal (6 fields) | ✅ Complete |
 
 ### Quests
 | Feature | Description | Status |
 |---------|-------------|--------|
 | Personal Goals | Non-work challenges | ✅ |
-| Milestones | Progress tracking | ⚠️ Verify |
-| Accountability | Link to People | ⚠️ Verify |
-| Modal | Full card+wheel modal | ❌ Stub only |
+| Milestones | Progress tracking (steps) | ✅ |
+| Accountability | Link to People (partner field) | ✅ |
+| Cascade | Creates next step task | ✅ |
+| Crossroads | 5 destinations + contacts | ✅ |
+| Modal | Full card+wheel modal (7 fields) | ✅ Complete |
 
 ---
 
@@ -305,7 +314,7 @@ This document contains every feature Helix has (or should have) across all modul
 | Crossroads Drag-Drop | Hold card → drop on target | ✅ |
 | Cascade Follow-ups | Auto-suggest next actions | ✅ |
 | Long-Press Actions | 350ms hold triggers | ✅ |
-| Haptic Feedback | Vibration on actions | ⚠️ Verify |
+| Haptic Feedback | Vibration on actions (60+ calls) | ✅ |
 | Toast Notifications | Non-blocking alerts | ✅ |
 
 ### Architecture
@@ -328,18 +337,18 @@ This document contains every feature Helix has (or should have) across all modul
 | event | ✅ | Full handlers |
 | note | ✅ | Full handlers |
 | task | ✅ | Full handlers |
-| contact | ✅ | Verify handlers |
-| product | ⚠️ | Needs verification |
-| service | ⚠️ | Needs verification |
-| booking | ⚠️ | Needs verification |
-| job | ❌ | Missing handlers |
-| invoice | ❌ | Missing handlers |
-| clique | ❌ | Missing handlers |
-| place | ❌ | Missing handlers |
-| function | ❌ | Missing handlers |
-| date (romance) | ❌ | Missing handlers |
-| quest | ❌ | Missing handlers |
-| person | ❌ | Missing handlers |
+| contact | ✅ | Full handlers |
+| product | ✅ | Full handlers |
+| service | ✅ | Full handlers |
+| booking | ✅ | Full handlers |
+| job | ✅ | 10 handlers (all destinations) |
+| invoice | ✅ | 9 handlers (all destinations) |
+| clique | ✅ | 5+2 handlers (core + contacts) |
+| place | ✅ | 5+2 handlers (core + contacts/bookings) |
+| function | ✅ | 5+2 handlers (core + contacts/bookings) |
+| date (romance) | ✅ | 5 handlers (core destinations) |
+| quest | ✅ | 5+1 handlers (core + contacts) |
+| person | ✅ | See contacts module |
 
 ### Target Types (10)
 | Target | Button | Status |
@@ -349,11 +358,11 @@ This document contains every feature Helix has (or should have) across all modul
 | notes | Red button | ✅ |
 | tasks | Purple button | ✅ |
 | connect | Green button | ✅ |
-| products | Orange button | ⚠️ |
-| services | Green button | ⚠️ |
-| bookings | Cyan button | ⚠️ |
-| contacts | Pink button | ⚠️ |
-| invoices | Gold button | ❌ |
+| products | Orange button | ✅ |
+| services | Green button | ✅ |
+| bookings | Cyan button | ✅ |
+| contacts | Pink button | ✅ |
+| invoices | Gold button | ✅ |
 
 ---
 
@@ -364,28 +373,32 @@ This document contains every feature Helix has (or should have) across all modul
 |---------|---------|--------|
 | Save Prospect | Suggest Task (follow-up) | ✅ |
 | Save Event | Suggest Task (prep) | ✅ |
-| Save Note | Suggest Task (action items) | ✅ |
+| Save Note | Suggest Task/Event (by type) | ✅ Fixed (noteId + prospectId linked) |
+| Save Task | Suggest Event (calendar) | ✅ Fixed (taskId linked) |
 | Complete Task | Update Prospect status | ✅ |
 | Send Email | Log to Prospect history | ✅ |
-| Service → Job | Create Job from Service | ⚠️ Verify |
-| Job → Invoice | Create Invoice from Job | ⚠️ Verify |
-| Booking → Event | Create Event from Booking | ⚠️ Verify |
-| Booking → Prospect | Create Prospect from Booking | ⚠️ Verify |
+| Save Product | Reorder task if low stock | ✅ Fixed (productId linked) |
+| Service → Job | Create Job from Service | ✅ cascadeFromService() |
+| Job → Invoice | Create Invoice from Job (with rounding) | ✅ generateInvoiceFromJob() |
+| Booking → Event | Create Event from Booking | ✅ cascadeFromBooking() |
+| Booking → Prospect | Create/Link Prospect from Booking | ✅ cascadeFromBooking() + smart match |
+| Invoice Sent | Update Job status to 'invoiced' | ✅ sendInvoice() |
+| Invoice Sent | Log to Prospect history | ✅ sendInvoice() |
+| Functions → Tasks | 3 planning tasks auto-created | ✅ cascadeFromFunction() |
+| Quests → Tasks | Next step task auto-created | ✅ cascadeFromQuest() |
 
-### Missing Cascades
+### Not Yet Built
 | Trigger | Should Create | Status |
 |---------|---------------|--------|
-| Job Complete | Suggest Invoice | ❌ |
-| Invoice Sent | Update Job status | ❌ |
-| Personals → Tasks | Reminder for contact | ❌ |
-| Functions → Events | Event from Function | ❌ |
-| Quests → Tasks | Tasks from milestones | ❌ |
+| Schedule Conflict | Warn on overlapping events | ❌ P2 |
+| CRM Bulk Actions | Multi-select operations | ❌ P2 |
+| Product Price Variants | Multiple pricing tiers | ❌ P3 |
 
 ---
 
 ## SECTION 11: UNIQUE FEATURES SUMMARY
 
-**Features ONLY Helix Has (14 Total):**
+**Features ONLY Helix Has (15 Total):**
 
 1. ⚡ Long-Press Voice on ANY Text Input
 2. ⚡ Smart Voice Parsing (auto-detect type/prospect/actions)
@@ -401,31 +414,35 @@ This document contains every feature Helix has (or should have) across all modul
 12. ⚡ Crossroads Drag-Drop System
 13. ⚡ Cascade Auto-Suggestions
 14. ⚡ Single-File Architecture (offline-first, zero dependencies)
+15. ⚡ Smart Contact Field (auto-show phone/email by task type)
 
 ---
 
 ## SECTION 12: PRIORITY FIXES FOR CLAUDE CODE
 
-### P0 - Critical (Must Fix Before Launch)
-1. Jobs module: Add Crossroads handlers
-2. Jobs module: Add Cascade (Job → Invoice)
-3. Invoices module: Add Crossroads handlers
-4. All 5 Personals sub-modals: Build from stub to full
+### P0 - Critical ✅ ALL COMPLETE
+1. ~~Jobs module: Add Crossroads handlers~~ ✅ 10 handlers
+2. ~~Jobs module: Add Cascade (Job → Invoice)~~ ✅ generateInvoiceFromJob()
+3. ~~Invoices module: Add Crossroads handlers~~ ✅ 9 handlers
+4. ~~All 5 Personals sub-modals: Build from stub to full~~ ✅ All 5 fully built
 
 ### P1 - High Priority
-5. Verify all Product/Service/Booking cascades work
-6. Add .ics calendar export
-7. Test delete functions across all modals (regression)
+5. ~~Verify all Product/Service/Booking cascades work~~ ✅ All verified
+6. Add .ics calendar export | ⚠️ Phase 1 of Networking Spec (no dependencies)
+7. ~~Test delete functions across all modals (regression)~~ ✅
 
 ### P2 - Medium Priority
-8. Add remaining Personals Crossroads handlers
-9. Push notifications via Service Worker
-10. Geolocation features (proximity alerts)
+8. ~~Add remaining Personals Crossroads handlers~~ ✅ All wired
+9. Schedule conflict detection | ❌ Not yet built
+10. CRM bulk actions | ❌ Not yet built
+11. Push notifications via Service Worker | Requires backend
+12. Geolocation features (proximity alerts) | Requires backend
 
 ### P3 - Nice to Have
-11. PDF invoice export
-12. Cloud sync (Supabase) - see Networking Spec
-13. Booking Widget Mode B (cloud-connected)
+13. ~~PDF invoice export~~ ✅ Print-to-PDF implemented
+14. Product price variants | ❌ Not yet built
+15. Cloud sync (Supabase) - see Networking Spec
+16. Booking Widget Mode B (cloud-connected)
 
 ---
 
