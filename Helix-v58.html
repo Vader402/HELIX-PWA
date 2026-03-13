@@ -1373,6 +1373,43 @@ body.mando-mode .btn.urgent svg{
 }
 .panel-body{flex:1;overflow-y:auto;padding:12px;-webkit-overflow-scrolling:touch}
 
+/* Settings Panel */
+.settings-section{
+  background:var(--gray-mid);
+  border-radius:12px;
+  overflow:hidden;
+  border:1px solid var(--gray-faint);
+}
+.settings-section-title{
+  font-family:'Oswald',sans-serif;
+  font-size:11px;
+  letter-spacing:0.15em;
+  text-transform:uppercase;
+  padding:12px 16px 8px;
+  color:var(--gray-light);
+}
+.settings-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:14px 16px;
+  cursor:pointer;
+  border-top:1px solid var(--gray-faint);
+  transition:background 0.15s;
+}
+.settings-row:active{
+  background:rgba(255,255,255,0.03);
+}
+.settings-label{
+  font-size:14px;
+  color:var(--white);
+}
+.settings-value{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  color:var(--gray-light);
+}
+
 /* Panel cards */
 /* P-CARD - GLOW FROM WITHIN design system */
 .p-card{
@@ -5160,6 +5197,7 @@ body.screensaver .ring{animation:ambient 8s ease-in-out infinite}
   display:flex;
   position:relative;
   overflow:hidden;
+  min-height:0;
 }
 
 /* Left side - card being built */
@@ -5170,6 +5208,7 @@ body.screensaver .ring{animation:ambient 8s ease-in-out infinite}
   overflow-y:auto;
   display:flex;
   flex-direction:column;
+  min-height:0;
 }
 .hx-form-area{
   flex:1;
@@ -6176,7 +6215,8 @@ body.screensaver .ring{animation:ambient 8s ease-in-out infinite}
   display:flex;
   flex-direction:column;
   gap:16px;
-  height:calc(100% - 60px);
+  flex:1;
+  min-height:0;
   overflow-y:auto;
 }
 .hx-view-card{
@@ -9239,7 +9279,7 @@ body.crossroads-active {
             <line x1="12" y1="2" x2="12" y2="15"/>
           </svg>
         </button>
-        <button class="day-view-btn settings" onclick="openDaySettings()">
+        <button class="day-view-btn settings" onclick="openSettings()">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="12" r="3"/>
           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
@@ -10856,6 +10896,86 @@ body.crossroads-active {
         <div class="prospect-wheel-overlay-bot"></div>
         <div class="prospect-wheel-selector"></div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div class="panel" id="settingsPanel">
+  <div class="panel-hdr" style="border-bottom:2px solid var(--gray-faint)">
+    <span class="panel-title" style="color:var(--amber)">SETTINGS</span>
+    <button class="panel-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="panel-body" id="settingsBody" style="padding:20px;display:flex;flex-direction:column;gap:20px">
+
+    <!-- APPEARANCE -->
+    <div class="settings-section">
+      <div class="settings-section-title" style="color:var(--cyan)">APPEARANCE</div>
+      <div class="settings-row" onclick="toggleTheme();renderSettings()">
+        <span class="settings-label">Theme</span>
+        <span class="settings-value" id="settingsThemeVal"></span>
+      </div>
+      <div class="settings-row" onclick="toggleSound();renderSettings()">
+        <span class="settings-label">Sound & Haptics</span>
+        <span class="settings-value" id="settingsSoundVal"></span>
+      </div>
+    </div>
+
+    <!-- DATA -->
+    <div class="settings-section">
+      <div class="settings-section-title" style="color:var(--purple)">DATA</div>
+      <div class="settings-row" onclick="exportFullBackup()">
+        <span class="settings-label">Export Full Backup</span>
+        <span class="settings-value" style="color:var(--green)">JSON</span>
+      </div>
+      <div class="settings-row" onclick="importFullBackup()">
+        <span class="settings-label">Restore from Backup</span>
+        <span class="settings-value" style="color:var(--amber)">Import</span>
+      </div>
+      <div class="settings-row" onclick="exportAllEventsICS && exportAllEventsICS()">
+        <span class="settings-label">Export Calendar</span>
+        <span class="settings-value" style="color:var(--cyan)">ICS</span>
+      </div>
+      <div class="settings-row" onclick="openImportICS && openImportICS()">
+        <span class="settings-label">Import Calendar</span>
+        <span class="settings-value" style="color:var(--cyan)">ICS</span>
+      </div>
+    </div>
+
+    <!-- STORAGE -->
+    <div class="settings-section">
+      <div class="settings-section-title" style="color:var(--gold)">STORAGE</div>
+      <div class="settings-row">
+        <span class="settings-label">Data Size</span>
+        <span class="settings-value" id="settingsDataSize"></span>
+      </div>
+      <div class="settings-row">
+        <span class="settings-label">Items</span>
+        <span class="settings-value" id="settingsItemCount"></span>
+      </div>
+    </div>
+
+    <!-- SYNC (placeholder) -->
+    <div class="settings-section">
+      <div class="settings-section-title" style="color:var(--gray-light)">SYNC</div>
+      <div class="settings-row" style="opacity:0.4">
+        <span class="settings-label">Cloud Sync</span>
+        <span class="settings-value">Coming Soon</span>
+      </div>
+    </div>
+
+    <!-- DANGER ZONE -->
+    <div class="settings-section">
+      <div class="settings-section-title" style="color:var(--red)">DANGER ZONE</div>
+      <div class="settings-row" onclick="clearAllData()" style="border-color:var(--red-dim)">
+        <span class="settings-label" style="color:var(--red)">Clear All Data</span>
+        <span class="settings-value" style="color:var(--red)">Reset</span>
+      </div>
+    </div>
+
+    <!-- Version -->
+    <div style="text-align:center;padding:20px 0;font-size:11px;color:var(--gray-faint);font-family:'JetBrains Mono',monospace">
+      HELIX v58 — Field Sales Command
     </div>
   </div>
 </div>
@@ -36397,7 +36517,105 @@ function performGlobalSearch(q){
 }
 
 // ============================================
-// FULL DATA EXPORT/IMPORT - JSON backup
+// SETTINGS PANEL
+// ============================================
+function openSettings(){
+  openPanel('settingsPanel');
+  renderSettings();
+}
+
+function renderSettings(){
+  // Theme
+  const themeVal = document.getElementById('settingsThemeVal');
+  if(themeVal) themeVal.textContent = currentTheme === 'dark' ? 'Dark' : 'Light';
+
+  // Sound
+  const soundVal = document.getElementById('settingsSoundVal');
+  if(soundVal) soundVal.textContent = soundEnabled ? 'ON' : 'OFF';
+
+  // Data size
+  const dataSize = document.getElementById('settingsDataSize');
+  if(dataSize){
+    const bytes = new Blob([JSON.stringify(S)]).size;
+    if(bytes < 1024) dataSize.textContent = bytes + ' B';
+    else if(bytes < 1048576) dataSize.textContent = (bytes/1024).toFixed(1) + ' KB';
+    else dataSize.textContent = (bytes/1048576).toFixed(1) + ' MB';
+  }
+
+  // Item count
+  const itemCount = document.getElementById('settingsItemCount');
+  if(itemCount){
+    const count = (S.prospects||[]).length + (S.events||[]).length + (S.tasks||[]).length +
+                  (S.notes||[]).length + (S.jobs||[]).length + (S.services||[]).length +
+                  (S.invoices||[]).length + (S.bookings||[]).length + (S.contacts||[]).length +
+                  (S.cliques||[]).length + (S.places||[]).length + (S.functions||[]).length +
+                  (S.dates||[]).length + (S.quests||[]).length + (S.products||[]).length;
+    itemCount.textContent = count + ' total';
+  }
+}
+
+function exportFullBackup(){
+  const data = {
+    version: 'v58',
+    exported: new Date().toISOString(),
+    state: S
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'helix-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Full backup downloaded');
+  haptic('success');
+}
+
+function importFullBackup(){
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if(data.state){
+          // New format — full state object
+          Object.assign(S, data.state);
+        } else {
+          // Legacy format — individual arrays
+          Object.keys(data).forEach(key => {
+            if(key !== 'version' && key !== 'exported' && S.hasOwnProperty(key)){
+              S[key] = data[key];
+            }
+          });
+        }
+        save();
+        updDisplay();
+        renderSettings();
+        toast('Data restored from backup');
+        haptic('success');
+      } catch(err){
+        toast('Invalid backup file');
+      }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function clearAllData(){
+  if(!confirm('This will delete ALL your data. This cannot be undone. Are you sure?')) return;
+  if(!confirm('Really? All prospects, events, tasks, notes — everything will be gone.')) return;
+  localStorage.removeItem(STORAGE);
+  location.reload();
+}
+
+// ============================================
+// FULL DATA EXPORT/IMPORT - JSON backup (legacy)
 // ============================================
 function exportAllData(){
   const data = {
