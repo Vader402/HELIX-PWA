@@ -21580,7 +21580,30 @@ function renderServices(){
 }
 
 // Service card action stubs
-function invoiceService(id){ toast('Invoice — coming soon'); }
+function invoiceService(id){
+  const svc = (S.services || []).find(s => s.id === id);
+  if(!svc){ toast('Service not found'); return; }
+  S.invoices = S.invoices || [];
+  const invNum = (S.invoices.length + 1).toString().padStart(3, '0');
+  const inv = {
+    id: uid(),
+    number: invNum,
+    clientId: '',
+    serviceId: svc.id,
+    items: [{ description: svc.name, qty: 1, rate: svc.rate || 0, total: svc.rate || 0 }],
+    subtotal: svc.rate || 0,
+    total: svc.rate || 0,
+    status: 'draft',
+    dueDate: new Date(Date.now() + 15*24*60*60*1000).toISOString().split('T')[0],
+    notes: svc.description || '',
+    created: new Date().toISOString()
+  };
+  S.invoices.push(inv);
+  save();
+  toast('✓ Invoice #' + invNum + ' created');
+  openPanel('invoices');
+  setTimeout(() => { renderInvoices(); openInvoiceModal(inv.id); }, 200);
+}
 function scheduleService(id){
   const s = S.services.find(x => x.id === id);
   if(s){
@@ -21820,10 +21843,23 @@ function openJobModal(id){
   document.getElementById('jobTitleInput').value = j?.title || '';
   document.getElementById('jobStatusVal').value = j?.status || 'pending';
   document.getElementById('jobNotesInput').value = j?.notes || '';
-  
+  document.getElementById('jobBillableVal').value = j?.billable === false ? 'false' : 'true';
+  document.getElementById('jobRoundingVal').value = j?.rounding || 15;
+
   // Update status chips
   document.querySelectorAll('#jobFieldStatus .hx-chip').forEach(c => {
     c.classList.toggle('selected', c.dataset.val === (j?.status || 'pending'));
+  });
+
+  // Update billable chips
+  const isBillable = j?.billable !== false;
+  document.querySelectorAll('#jobFieldStatus .hx-chip[data-val="billable"], #jobFieldStatus .hx-chip[data-val="nonbillable"]').forEach(c => {
+    c.classList.toggle('selected', (c.dataset.val === 'billable') === isBillable);
+  });
+  // Update rounding chips
+  const roundVal = j?.rounding || 15;
+  document.querySelectorAll('#jobFieldStatus .hx-chip[data-val="1"], #jobFieldStatus .hx-chip[data-val="6"], #jobFieldStatus .hx-chip[data-val="15"], #jobFieldStatus .hx-chip[data-val="30"]').forEach(c => {
+    c.classList.toggle('selected', parseInt(c.dataset.val) === roundVal);
   });
   
   // Show/hide view vs edit mode
@@ -22113,19 +22149,21 @@ function saveJob(){
   const serviceId = document.getElementById('jobServiceSel').value;
   const status = document.getElementById('jobStatusVal').value;
   const notes = document.getElementById('jobNotesInput').value.trim();
-  
+  const billable = document.getElementById('jobBillableVal')?.value !== 'false';
+  const rounding = parseInt(document.getElementById('jobRoundingVal')?.value) || 15;
+
   if(!title){
     toast('Enter a job title');
     setJobField(0);
     return;
   }
-  
+
   S.jobs = S.jobs || [];
-  
+
   if(id){
     const idx = S.jobs.findIndex(j => j.id === id);
     if(idx >= 0){
-      S.jobs[idx] = {...S.jobs[idx], title, clientId, serviceId, status, notes, updated: new Date().toISOString()};
+      S.jobs[idx] = {...S.jobs[idx], title, clientId, serviceId, status, notes, billable, rounding, updated: new Date().toISOString()};
     }
   } else {
     S.jobs.push({
@@ -22135,6 +22173,8 @@ function saveJob(){
       serviceId,
       status,
       notes,
+      billable,
+      rounding,
       totalSeconds: 0,
       timeEntries: [],
       created: new Date().toISOString()
@@ -22387,9 +22427,13 @@ function generateInvoiceFromJob(jobId){
   const id = jobId || document.getElementById('jobId').value;
   const job = (S.jobs || []).find(j => j.id === id);
   if(!job) return;
-  
+  if(job.billable === false){ toast('Job is non-billable'); return; }
+
   const service = (S.services || []).find(s => s.id === job.serviceId);
-  const hours = (job.totalSeconds || 0) / 3600;
+  const roundingMins = job.rounding || 15;
+  const rawMinutes = (job.totalSeconds || 0) / 60;
+  const roundedMinutes = Math.ceil(rawMinutes / roundingMins) * roundingMins;
+  const hours = roundedMinutes / 60;
   const rate = service?.rate || 0;
   const total = service?.rateType === 'flat' ? rate : hours * rate;
   
@@ -22463,7 +22507,7 @@ function renderJobs(){
   
   // Calculate unbilled
   let unbilled = 0;
-  (S.jobs || []).filter(j => j.status !== 'invoiced').forEach(j => {
+  (S.jobs || []).filter(j => j.status !== 'invoiced' && j.billable !== false).forEach(j => {
     const svc = (S.services || []).find(s => s.id === j.serviceId);
     if(svc){
       const hrs = (j.totalSeconds || 0) / 3600;
@@ -22599,6 +22643,9 @@ function openInvoiceModal(id){
   // Populate fields
   document.getElementById('invoiceDueInput').value = inv?.dueDate || new Date(Date.now() + 15*24*60*60*1000).toISOString().split('T')[0];
   document.getElementById('invoiceNotesInput').value = inv?.notes || '';
+  document.getElementById('invoiceTaxInput').value = inv?.taxPercent || 0;
+  document.getElementById('invoiceDiscountInput').value = inv?.discountVal || 0;
+  if(document.getElementById('invoiceDiscountType')) document.getElementById('invoiceDiscountType').value = inv?.discountType || 'percent';
   
   // Show/hide view vs edit mode
   if(isEdit){
@@ -22987,13 +23034,19 @@ function saveInvoice(){
   }
   
   const subtotal = items.reduce((sum, i) => sum + (i.total || 0), 0);
-  
+  const taxPercent = parseFloat(document.getElementById('invoiceTaxInput')?.value) || 0;
+  const discountVal = parseFloat(document.getElementById('invoiceDiscountInput')?.value) || 0;
+  const discountType = document.getElementById('invoiceDiscountType')?.value || 'percent';
+  const taxAmount = subtotal * (taxPercent / 100);
+  const discountAmount = discountType === 'percent' ? subtotal * (discountVal / 100) : discountVal;
+  const total = subtotal + taxAmount - discountAmount;
+
   S.invoices = S.invoices || [];
-  
+
   if(id){
     const idx = S.invoices.findIndex(i => i.id === id);
     if(idx >= 0){
-      S.invoices[idx] = {...S.invoices[idx], clientId, items, subtotal, total: subtotal, dueDate, notes, updated: new Date().toISOString()};
+      S.invoices[idx] = {...S.invoices[idx], clientId, items, subtotal, taxPercent, discountVal, discountType, taxAmount, discountAmount, total, dueDate, notes, updated: new Date().toISOString()};
     }
   } else {
     const invNum = (S.invoices.length + 1).toString().padStart(3, '0');
@@ -23003,7 +23056,12 @@ function saveInvoice(){
       clientId,
       items,
       subtotal,
-      total: subtotal,
+      taxPercent,
+      discountVal,
+      discountType,
+      taxAmount,
+      discountAmount,
+      total,
       status: 'draft',
       dueDate,
       notes,
@@ -23490,8 +23548,16 @@ function saveBookingFromModal(){
   const customer = document.getElementById('bookingCustomerInput').value.trim();
   if(!customer){ toast('Enter customer name'); return; }
   
+  // Smart-match customer name to prospect
+  let clientId = '';
+  if(typeof findProspectMatches === 'function'){
+    const matches = findProspectMatches(customer);
+    if(matches.length > 0) clientId = matches[0].prospect ? matches[0].prospect.id : matches[0].id;
+  }
+
   const data = {
     customer: customer,
+    clientId: clientId,
     phone: document.getElementById('bookingPhoneInput').value.trim(),
     email: document.getElementById('bookingEmailInput').value.trim(),
     serviceId: document.getElementById('bookingServiceSel').value,
@@ -23671,11 +23737,11 @@ function renderBookings(){
       const statusClass = b.status === 'confirmed' ? 'today' : b.status === 'pending' ? 'overdue' : '';
       html += `<div class="prospect-card" data-id="${b.id}" data-source-type="booking" onclick="openBookingModal('${b.id}')" style="border-left:3px solid var(--cyan)">
         <div class="card-header">
-          <span class="card-name">${b.name}</span>
+          <span class="card-name">${b.customer || b.name || 'Booking'}</span>
           <span class="card-status ${statusClass}">${b.status}</span>
         </div>
         <div class="card-meta">
-          ${b.date} at ${fmtTime(b.time)} · ${b.service || 'Appointment'}
+          ${b.date} at ${fmtTime(b.time)} · ${b.serviceId ? ((S.services||[]).find(s=>s.id===b.serviceId)?.name || b.service || 'Service') : (b.service || 'Appointment')}
         </div>
         <div class="card-actions">
           <button class="card-action email" onclick="event.stopPropagation();emailBooking('${b.id}')" title="Email">${SVG.email}</button>
@@ -35677,7 +35743,7 @@ function cascadeFromQuest(){
     'prospect-invoices': function(data){
       const p = data.sourceData || {};
       S.invoices = S.invoices || [];
-      const inv = { id: uid(), number: 'INV-'+(S.invoices.length+1001), clientId: p.id, items: [], status: 'draft', created: new Date().toISOString() };
+      const inv = { id: uid(), number: (S.invoices.length+1).toString().padStart(3,'0'), clientId: p.id, items: [], status: 'draft', created: new Date().toISOString() };
       S.invoices.push(inv);
       save(); toast('✓ Invoice created'); openPanel('invoices');
       setTimeout(() => { renderInvoices(); highlightNewCard(inv.id); }, 100);
@@ -35686,7 +35752,7 @@ function cascadeFromQuest(){
       const n = data.sourceData || {};
       if(n.prospectId){
         S.invoices = S.invoices || [];
-        const inv = { id: uid(), number: 'INV-'+(S.invoices.length+1001), clientId: n.prospectId, items: [], notes: n.title, status: 'draft', created: new Date().toISOString() };
+        const inv = { id: uid(), number: (S.invoices.length+1).toString().padStart(3,'0'), clientId: n.prospectId, items: [], notes: n.title, status: 'draft', created: new Date().toISOString() };
         S.invoices.push(inv);
         save(); toast('✓ Invoice created from note'); openPanel('invoices');
         setTimeout(() => { renderInvoices(); highlightNewCard(inv.id); }, 100);
@@ -35696,7 +35762,7 @@ function cascadeFromQuest(){
       const t = data.sourceData || {};
       if(t.prospectId){
         S.invoices = S.invoices || [];
-        const inv = { id: uid(), number: 'INV-'+(S.invoices.length+1001), clientId: t.prospectId, items: [], notes: t.title, status: 'draft', created: new Date().toISOString() };
+        const inv = { id: uid(), number: (S.invoices.length+1).toString().padStart(3,'0'), clientId: t.prospectId, items: [], notes: t.title, status: 'draft', created: new Date().toISOString() };
         S.invoices.push(inv);
         save(); toast('✓ Invoice created from task'); openPanel('invoices');
         setTimeout(() => { renderInvoices(); highlightNewCard(inv.id); }, 100);
@@ -35706,7 +35772,7 @@ function cascadeFromQuest(){
       const e = data.sourceData || {};
       if(e.prospectId){
         S.invoices = S.invoices || [];
-        const inv = { id: uid(), number: 'INV-'+(S.invoices.length+1001), clientId: e.prospectId, items: [], notes: e.title, status: 'draft', created: new Date().toISOString() };
+        const inv = { id: uid(), number: (S.invoices.length+1).toString().padStart(3,'0'), clientId: e.prospectId, items: [], notes: e.title, status: 'draft', created: new Date().toISOString() };
         S.invoices.push(inv);
         save(); toast('✓ Invoice created from event'); openPanel('invoices');
         setTimeout(() => { renderInvoices(); highlightNewCard(inv.id); }, 100);
@@ -35727,7 +35793,7 @@ function cascadeFromQuest(){
     'product-invoices': function(data){
       const p = data.sourceData || {};
       S.invoices = S.invoices || [];
-      const inv = { id: uid(), number: 'INV-'+(S.invoices.length+1001), items: [{ name: p.name, qty: 1, rate: p.price||0 }], status: 'draft', created: new Date().toISOString() };
+      const inv = { id: uid(), number: (S.invoices.length+1).toString().padStart(3,'0'), items: [{ name: p.name, qty: 1, rate: p.price||0 }], status: 'draft', created: new Date().toISOString() };
       S.invoices.push(inv);
       save(); toast('✓ Invoice with product'); openPanel('invoices');
       setTimeout(() => { renderInvoices(); highlightNewCard(inv.id); }, 100);
@@ -35747,7 +35813,7 @@ function cascadeFromQuest(){
     'service-invoices': function(data){
       const s = data.sourceData || {};
       S.invoices = S.invoices || [];
-      const inv = { id: uid(), number: 'INV-'+(S.invoices.length+1001), items: [{ name: s.name, qty: 1, rate: s.rate||0 }], status: 'draft', created: new Date().toISOString() };
+      const inv = { id: uid(), number: (S.invoices.length+1).toString().padStart(3,'0'), items: [{ name: s.name, qty: 1, rate: s.rate||0 }], status: 'draft', created: new Date().toISOString() };
       S.invoices.push(inv);
       save(); toast('✓ Invoice with service'); openPanel('invoices');
       setTimeout(() => { renderInvoices(); highlightNewCard(inv.id); }, 100);
@@ -35764,7 +35830,7 @@ function cascadeFromQuest(){
     'booking-invoices': function(data){
       const b = data.sourceData || {};
       S.invoices = S.invoices || [];
-      const inv = { id: uid(), number: 'INV-'+(S.invoices.length+1001), clientId: b.clientId, bookingId: b.id, items: [], status: 'draft', created: new Date().toISOString() };
+      const inv = { id: uid(), number: (S.invoices.length+1).toString().padStart(3,'0'), clientId: b.clientId, bookingId: b.id, items: [], status: 'draft', created: new Date().toISOString() };
       S.invoices.push(inv);
       save(); toast('✓ Invoice from booking'); openPanel('invoices');
       setTimeout(() => { renderInvoices(); highlightNewCard(inv.id); }, 100);
@@ -35815,7 +35881,7 @@ function cascadeFromQuest(){
     'contact-invoices': function(data){
       const c = data.sourceData || {};
       S.invoices = S.invoices || [];
-      const inv = { id: uid(), number: 'INV-'+(S.invoices.length+1001), contactId: c.id, items: [], status: 'draft', created: new Date().toISOString() };
+      const inv = { id: uid(), number: (S.invoices.length+1).toString().padStart(3,'0'), contactId: c.id, items: [], status: 'draft', created: new Date().toISOString() };
       S.invoices.push(inv);
       save(); toast('✓ Invoice for contact'); openPanel('invoices');
       setTimeout(() => { renderInvoices(); highlightNewCard(inv.id); }, 100);
