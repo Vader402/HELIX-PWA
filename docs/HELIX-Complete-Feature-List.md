@@ -182,7 +182,7 @@ This document contains every feature Helix has (or should have) across all modul
 | Reorder Alerts | Low stock warnings | ✅ |
 | Product Categories | Organize by type | ✅ |
 | Product Images | Photo attachment | ✅ |
-| Price Variants | Multiple pricing tiers | ❌ Not built (P3) |
+| Price Variants | Multiple pricing tiers (label + price) | ✅ Added |
 | Crossroads Integration | Drag to other modules | ✅ Complete |
 | Cascade Integration | Auto-actions on save | ✅ Complete (productId linked) |
 
@@ -392,7 +392,7 @@ This document contains every feature Helix has (or should have) across all modul
 |---------|---------------|--------|
 | Schedule Conflict | Warn on overlapping events | ✅ Added |
 | CRM Bulk Actions | Multi-select operations | ✅ Added |
-| Product Price Variants | Multiple pricing tiers | ❌ P3 |
+| Product Price Variants | Multiple pricing tiers | ✅ Added |
 
 ---
 
@@ -436,11 +436,11 @@ This document contains every feature Helix has (or should have) across all modul
 9. ~~Schedule conflict detection~~ ✅ Built (findEventConflicts + confirm dialog)
 10. ~~CRM bulk actions~~ ✅ Built (select, status change, delete, CSV export)
 11. Push notifications via Service Worker | Requires backend
-12. Geolocation features (proximity alerts) | Requires backend
+12. ~~Geolocation features~~ ✅ Built (location toggle, nearby filter, note auto-tag, job check-in)
 
 ### P3 - Nice to Have
 13. ~~PDF invoice export~~ ✅ Print-to-PDF implemented
-14. Product price variants | ❌ Not yet built
+14. ~~Product price variants~~ ✅ Built (label + price per tier)
 15. Cloud sync (Supabase) - see Networking Spec
 16. Booking Widget Mode B (cloud-connected)
 
