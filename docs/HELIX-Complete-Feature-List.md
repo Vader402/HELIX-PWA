@@ -16,7 +16,7 @@ This document contains every feature Helix has (or should have) across all modul
 |--------|-------|--------|
 | CRM | A | Complete |
 | Tasks | A | Complete |
-| Schedule | A- | Missing: Calendar sync |
+| Schedule | A | .ics export/import, conflict detection added |
 | Notes | A | Complete |
 | Connect (Email) | B+ | Missing: Tracking |
 | Products | A- | Cascades wired, crossroads complete |
@@ -46,7 +46,7 @@ This document contains every feature Helix has (or should have) across all modul
 | Star/Pin Favorites | Mark high-priority prospects | ✅ |
 | Duplicate Detection | Warn on similar contacts | ✅ Added |
 | Import/Export | CSV import, JSON export | ✅ |
-| Bulk Actions | Multi-select operations | ❌ Not built (P2) |
+| Bulk Actions | Multi-select: status change, delete, CSV export | ✅ Added |
 
 ### CRM Unique Features
 | Feature | Description | Status |
@@ -102,14 +102,14 @@ This document contains every feature Helix has (or should have) across all modul
 | Reminders | Push notification triggers | ⚠️ Service Worker needed |
 | Drag & Drop | Move events on calendar | ✅ |
 | Color Coding | By type or prospect | ✅ |
-| Conflict Detection | Warn on overlapping events | ❌ Not built (P2) |
+| Conflict Detection | Warn on overlapping events | ✅ Added (findEventConflicts) |
 
 ### Schedule Planned/Missing
 | Feature | Description | Status |
 |---------|-------------|--------|
 | Google Calendar Sync | Two-way sync | ❌ Planned (use .ics instead) |
-| .ics Export | Send calendar invites | ⚠️ Add |
-| .ics Import | Receive calendar invites | ⚠️ Add |
+| .ics Export | Send calendar invites (single + bulk) | ✅ exportEventICS() + exportAllEventsICS() |
+| .ics Import | Receive calendar invites | ✅ openImportICS() + parseICS() |
 | Booking Links | Calendly-style public scheduling | ⚠️ Mode A exists, Mode B planned |
 | Share Availability | Generate public availability link | ✅ (via Services) |
 
@@ -390,8 +390,8 @@ This document contains every feature Helix has (or should have) across all modul
 ### Not Yet Built
 | Trigger | Should Create | Status |
 |---------|---------------|--------|
-| Schedule Conflict | Warn on overlapping events | ❌ P2 |
-| CRM Bulk Actions | Multi-select operations | ❌ P2 |
+| Schedule Conflict | Warn on overlapping events | ✅ Added |
+| CRM Bulk Actions | Multi-select operations | ✅ Added |
 | Product Price Variants | Multiple pricing tiers | ❌ P3 |
 
 ---
@@ -428,13 +428,13 @@ This document contains every feature Helix has (or should have) across all modul
 
 ### P1 - High Priority
 5. ~~Verify all Product/Service/Booking cascades work~~ ✅ All verified
-6. Add .ics calendar export | ⚠️ Phase 1 of Networking Spec (no dependencies)
+6. ~~Add .ics calendar export~~ ✅ Already built (export single/all + import)
 7. ~~Test delete functions across all modals (regression)~~ ✅
 
 ### P2 - Medium Priority
 8. ~~Add remaining Personals Crossroads handlers~~ ✅ All wired
-9. Schedule conflict detection | ❌ Not yet built
-10. CRM bulk actions | ❌ Not yet built
+9. ~~Schedule conflict detection~~ ✅ Built (findEventConflicts + confirm dialog)
+10. ~~CRM bulk actions~~ ✅ Built (select, status change, delete, CSV export)
 11. Push notifications via Service Worker | Requires backend
 12. Geolocation features (proximity alerts) | Requires backend
 

@@ -9423,6 +9423,11 @@ body.crossroads-active {
   <div class="panel-hdr" style="padding:6px 12px;border-bottom:1px solid var(--gray-faint)">
     <span class="panel-title" style="color:var(--cyan);font-size:32px;letter-spacing:0.15em;text-shadow:0 0 20px var(--cyan-glow),0 0 40px var(--cyan-glow)">CRM</span>
     <div style="display:flex;align-items:center;gap:10px">
+      <button class="outreach-add-btn" onclick="toggleCRMBulkMode()" title="Bulk Select" id="crmBulkToggle" style="opacity:0.5">
+        <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2">
+          <polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+      </button>
       <button class="outreach-add-btn" onclick="addProspect()">
         <svg viewBox="0 0 24 24">
           <circle cx="12" cy="8" r="4" opacity="0.8"/>
@@ -9474,6 +9479,18 @@ body.crossroads-active {
     </div>
   </div>
   
+  <!-- Bulk Actions Bar (hidden by default) -->
+  <div id="crmBulkBar" style="display:none;padding:6px 12px;background:var(--gray-dark);border-bottom:1px solid var(--cyan);display:none;align-items:center;gap:8px;flex-wrap:wrap">
+    <span style="color:var(--cyan);font-size:11px;letter-spacing:0.1em;font-family:Oswald" id="crmBulkCount">0 SELECTED</span>
+    <button class="hx-chip" onclick="crmBulkSetStatus('contacted')" style="font-size:10px;padding:4px 8px">→ Contacted</button>
+    <button class="hx-chip" onclick="crmBulkSetStatus('sample')" style="font-size:10px;padding:4px 8px">→ Sample</button>
+    <button class="hx-chip" onclick="crmBulkSetStatus('closed')" style="font-size:10px;padding:4px 8px">→ Closed</button>
+    <button class="hx-chip" onclick="crmBulkSetStatus('dead')" style="font-size:10px;padding:4px 8px">→ Dead</button>
+    <button class="hx-chip" onclick="crmBulkDelete()" style="font-size:10px;padding:4px 8px;border-color:var(--red);color:var(--red)">🗑 Delete</button>
+    <button class="hx-chip" onclick="crmBulkExport()" style="font-size:10px;padding:4px 8px;border-color:var(--green);color:var(--green)">📤 Export</button>
+    <button class="hx-chip" onclick="toggleCRMBulkMode()" style="font-size:10px;padding:4px 8px;margin-left:auto">✕ Cancel</button>
+  </div>
+
   <!-- Split layout: Cards left, Wheel right -->
   <div class="outreach-split">
     <!-- Cards List -->
@@ -13788,6 +13805,19 @@ function generateRecurringInstances(baseEvent, recurrence, count = 12){
   return instances;
 }
 
+function findEventConflicts(date, startTime, endTime, allDay, excludeId){
+  if(!date || allDay) return [];
+  const toMin = t => { const [h,m] = (t||'09:00').split(':').map(Number); return h*60+m; };
+  const sA = toMin(startTime);
+  const eA = endTime ? toMin(endTime) : sA + 60;
+  return (S.events||[]).filter(e => {
+    if(e.id === excludeId || e.date !== date || e.allDay || e.done) return false;
+    const sB = toMin(e.time);
+    const eB = e.endTime ? toMin(e.endTime) : sB + 60;
+    return sA < eB && sB < eA;
+  });
+}
+
 function saveEvt(){
   const title=document.getElementById('evtTitleInput').value.trim()||'Event';
   const date=document.getElementById('evtDate').value;
@@ -13856,7 +13886,16 @@ function saveEvt(){
   
   // Get recurrence
   const recurrence=document.getElementById('evtRecurrence').value;
-  
+
+  // ── Conflict Detection (before save) ──
+  const conflicts = findEventConflicts(date, time, endTime || null, allDay, editingEvtId);
+  if(conflicts.length > 0){
+    const names = conflicts.map(c => c.title + ' (' + c.time + ')').join(', ');
+    if(!confirm('⚠️ Schedule conflict with: ' + names + '\n\nSave anyway?')){
+      return;
+    }
+  }
+
   if(editingEvtId){
     // Update existing
     const evt=S.events.find(e=>e.id===editingEvtId);
@@ -13889,7 +13928,7 @@ function saveEvt(){
       subtasks:subtasks
     };
     S.events.push(newEvt);
-    
+
     // Generate recurring instances if recurrence is set
     if(recurrence && recurrence !== ''){
       const instances = generateRecurringInstances(newEvt, recurrence);
@@ -13899,13 +13938,13 @@ function saveEvt(){
       }
     }
   }
-  
+
   const wasEditing=!!editingEvtId;
   save();
   cleanupSchedulerMode();
   closeEvtModal();
   updDisplay();
-  
+
   // Refresh the current schedule view
   if(!document.getElementById('dayWheelView').classList.contains('hidden')){
     renderDayWheel();
@@ -16767,7 +16806,9 @@ function renderCRM(){
     const typeIcon=typeIcons[p.type]||'';
     const noteCount = (S.notes || []).filter(n => n.prospectId === p.id && !n.archived).length;
     
-    return `<div class="prospect-card ${highlighted}" data-id="${p.id}" data-source-type="prospect" onclick="editProspect('${p.id}')">
+    const bulkCheck = window.crmBulkMode ? `<span class="crm-bulk-check" onclick="event.stopPropagation();toggleCRMBulkSelect('${p.id}')" style="position:absolute;top:6px;right:6px;width:22px;height:22px;border:2px solid ${(window.crmBulkSelected||new Set()).has(p.id)?'var(--cyan)':'var(--gray-mid)'};border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:${(window.crmBulkSelected||new Set()).has(p.id)?'var(--cyan)':'transparent'};color:var(--black);font-size:14px;font-weight:bold;z-index:2">${(window.crmBulkSelected||new Set()).has(p.id)?'✓':''}</span>` : '';
+    return `<div class="prospect-card ${highlighted}" data-id="${p.id}" data-source-type="prospect" onclick="${window.crmBulkMode?`toggleCRMBulkSelect('${p.id}');renderCRM()`:`editProspect('${p.id}')`}" style="position:relative">
+      ${bulkCheck}
       <div class="card-top">
         ${typeIcon?`<span class="card-type">${typeIcon}</span>`:''}
         <span class="card-name">${p.biz}</span>
@@ -16823,6 +16864,77 @@ function renderCRM(){
 }
 
 let crmSelectedId=null;
+
+// ── CRM Bulk Actions ──
+window.crmBulkMode = false;
+window.crmBulkSelected = new Set();
+
+function toggleCRMBulkMode(){
+  window.crmBulkMode = !window.crmBulkMode;
+  window.crmBulkSelected = new Set();
+  const bar = document.getElementById('crmBulkBar');
+  const toggle = document.getElementById('crmBulkToggle');
+  if(bar) bar.style.display = window.crmBulkMode ? 'flex' : 'none';
+  if(toggle) toggle.style.opacity = window.crmBulkMode ? '1' : '0.5';
+  updateCRMBulkCount();
+  renderCRM();
+}
+
+function toggleCRMBulkSelect(id){
+  if(window.crmBulkSelected.has(id)) window.crmBulkSelected.delete(id);
+  else window.crmBulkSelected.add(id);
+  updateCRMBulkCount();
+}
+
+function updateCRMBulkCount(){
+  const el = document.getElementById('crmBulkCount');
+  if(el) el.textContent = window.crmBulkSelected.size + ' SELECTED';
+}
+
+function crmBulkSetStatus(status){
+  if(!window.crmBulkSelected.size) return toast('Select prospects first');
+  window.crmBulkSelected.forEach(id => {
+    const p = S.prospects.find(x => x.id === id);
+    if(p){
+      p.status = status;
+      p.history = p.history || [];
+      p.history.push({date: new Date().toISOString().split('T')[0], action: 'Bulk: status → ' + status});
+    }
+  });
+  save();
+  toast('✓ ' + window.crmBulkSelected.size + ' prospects → ' + status);
+  window.crmBulkSelected = new Set();
+  updateCRMBulkCount();
+  renderCRM();
+}
+
+function crmBulkDelete(){
+  if(!window.crmBulkSelected.size) return toast('Select prospects first');
+  if(!confirm('Delete ' + window.crmBulkSelected.size + ' prospects? This cannot be undone.')) return;
+  S.prospects = S.prospects.filter(p => !window.crmBulkSelected.has(p.id));
+  save();
+  toast('✓ ' + window.crmBulkSelected.size + ' prospects deleted');
+  window.crmBulkSelected = new Set();
+  updateCRMBulkCount();
+  renderCRM();
+}
+
+function crmBulkExport(){
+  if(!window.crmBulkSelected.size) return toast('Select prospects first');
+  const selected = S.prospects.filter(p => window.crmBulkSelected.has(p.id));
+  const csv = ['Business,Contact,Phone,Email,Status,Type,Follow-Up'];
+  selected.forEach(p => {
+    csv.push([p.biz,p.con,p.phone,p.email,p.status,p.type,p.followUp].map(v => '"'+(v||'').replace(/"/g,'""')+'"').join(','));
+  });
+  const blob = new Blob([csv.join('\n')], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'helix-prospects-' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('✓ Exported ' + selected.length + ' prospects');
+}
 
 function updateCRMWheelFrame(){
   const wheel=document.getElementById('crmWheel');
