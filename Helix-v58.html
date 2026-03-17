@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="data:application/json,{&quot;name&quot;:&quot;Helix - Field Sales Command&quot;,&quot;short_name&quot;:&quot;Helix&quot;,&quot;description&quot;:&quot;CRM + Tasks + Schedule + Notes + Email&quot;,&quot;start_url&quot;:&quot;.&quot;,&quot;display&quot;:&quot;standalone&quot;,&quot;orientation&quot;:&quot;portrait&quot;,&quot;background_color&quot;:&quot;%230a0a0c&quot;,&quot;theme_color&quot;:&quot;%23F59E0B&quot;,&quot;icons&quot;:[{&quot;src&quot;:&quot;data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%230a0a0c' stroke='%23F59E0B' stroke-width='4'/><circle cx='50' cy='50' r='35' fill='none' stroke='%23F59E0B' stroke-width='2' opacity='0.5'/><path d='M35 65 L50 25 L65 65 M40 55 L60 55' stroke='%23F59E0B' stroke-width='4' fill='none'/></svg>&quot;,&quot;sizes&quot;:&quot;192x192&quot;,&quot;type&quot;:&quot;image/svg+xml&quot;}]}">
-<title>HELIX v58</title>
+<title>HELIX v85</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" async></script>
 <style>
@@ -2285,6 +2285,7 @@ body.mando-mode .btn.urgent svg{
 .day-details-type.production{background:var(--red-dim);color:var(--red)}
 .day-details-type.reminder{background:var(--purple-dim);color:var(--purple)}
 .day-details-type.task{background:var(--orange-dim);color:var(--orange)}
+.day-details-type.booking{background:var(--cyan-dim);color:var(--cyan)}
 
 .day-details-meta{
   font-size:14px;
@@ -2358,6 +2359,7 @@ body.mando-mode .btn.urgent svg{
 .day-details-card.reminder::before{background:var(--purple);box-shadow:0 0 8px var(--purple),0 0 16px var(--purple-glow)}
 .day-details-card.task::before{background:var(--orange);box-shadow:0 0 8px var(--orange),0 0 16px var(--orange-glow)}
 .day-details-card.meeting::before{background:var(--pink);box-shadow:0 0 8px var(--pink),0 0 16px var(--pink-glow)}
+.day-details-card.booking::before{background:var(--cyan);box-shadow:0 0 8px var(--cyan),0 0 16px var(--cyan-glow);animation:bookingPulse 2s ease-in-out infinite}
 
 .evt-card-prospect{
   font-size:13px;
@@ -2528,6 +2530,8 @@ body.mando-mode .btn.urgent svg{
 .day-slot-dot.reminder{background:var(--purple)}
 .day-slot-dot.task{background:var(--orange)}
 .day-slot-dot.meeting{background:var(--pink)}
+.day-slot-dot.booking{background:var(--cyan);animation:bookingPulse 2s ease-in-out infinite}
+@keyframes bookingPulse{0%,100%{box-shadow:0 0 4px var(--cyan-glow)}50%{box-shadow:0 0 10px var(--cyan),0 0 20px var(--cyan-glow)}}
 
 /* Selector dots - bigger and brighter */
 .selector-dot{
@@ -2970,6 +2974,7 @@ body.mando-mode .btn.urgent svg{
 .week-event.reminder::before{background:var(--purple);box-shadow:0 0 4px var(--purple),0 0 8px var(--purple-glow)}
 .week-event.task::before{background:var(--orange);box-shadow:0 0 4px var(--orange),0 0 8px var(--orange-glow)}
 .week-event.meeting::before{background:var(--pink);box-shadow:0 0 4px var(--pink),0 0 8px var(--pink-glow)}
+.week-event.booking::before{background:var(--cyan);box-shadow:0 0 4px var(--cyan),0 0 8px var(--cyan-glow);animation:bookingPulse 2s ease-in-out infinite}
 
 .week-add-btn{
   margin-top:auto;
@@ -15489,12 +15494,20 @@ function renderMonthView(){
   const selectedDate=vDate.getDate();
   const isSelectedMonth=vDate.getMonth()===month&&vDate.getFullYear()===year;
   
-  // Count events per day
+  // Count events per day (events + bookings)
   const eventCounts={};
   S.events.forEach(e=>{
     const eDate=new Date(e.date);
     if(eDate.getMonth()===month&&eDate.getFullYear()===year){
       const day=eDate.getDate();
+      eventCounts[day]=(eventCounts[day]||0)+1;
+    }
+  });
+  (S.bookings||[]).forEach(b=>{
+    if(b.status==='cancelled')return;
+    const bDate=new Date(b.date);
+    if(bDate.getMonth()===month&&bDate.getFullYear()===year){
+      const day=bDate.getDate();
       eventCounts[day]=(eventCounts[day]||0)+1;
     }
   });
@@ -16340,10 +16353,19 @@ function showMonthView(){
 function renderDayWheel(){
   const viewStr=vDate.toISOString().split('T')[0];
   const dayEvts=S.events.filter(e=>e.date===viewStr);
-  
+
+  // Include bookings as calendar items
+  const dayBookings=(S.bookings||[]).filter(b=>b.date===viewStr&&b.status!=='cancelled').map(b=>({
+    ...b,
+    title:b.customer||'Booking',
+    type:'booking',
+    _isBooking:true
+  }));
+  const allItems=[...dayEvts,...dayBookings];
+
   // Store events for details panel
   window.dayWheelEvents={};
-  dayEvts.forEach(e=>{
+  allItems.forEach(e=>{
     const slot=e.allDay?'allday':roundToSlot(e.time);
     if(!window.dayWheelEvents[slot])window.dayWheelEvents[slot]=[];
     window.dayWheelEvents[slot].push(e);

@@ -15,7 +15,7 @@
     input:focus,select:focus{outline:none;border-color:#F59E0B;box-shadow:0 0 0 2px rgba(245,158,11,0.15)}
     .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;min-height:40px}
     .slot{background:#262626;border:1px solid #374151;border-radius:8px;padding:10px;text-align:center;cursor:pointer;font-size:13px;transition:all 0.15s}
-    .slot:hover{border-color:#F59E0B;background:#262626}
+    .slot:hover,.slot:focus{border-color:#F59E0B;background:#262626;outline:none}
     .slot.selected{background:rgba(245,158,11,0.12);border-color:#F59E0B;color:#F59E0B;font-weight:500}
     .btn{width:100%;background:linear-gradient(135deg,#F59E0B,#D97706);border:none;border-radius:12px;padding:14px;color:#000;font-weight:600;font-size:16px;cursor:pointer;margin-top:4px;transition:opacity 0.15s}
     .btn:hover{opacity:0.9}
@@ -54,25 +54,25 @@
       <strong id="durationLabel">30 min</strong>
     </div>
 
-    <label class="label">Your Name</label>
-    <input type="text" id="customerName" placeholder="Your name" required>
+    <label class="label" for="customerName">Your Name</label>
+    <input type="text" id="customerName" placeholder="Your name" required maxlength="100">
 
-    <label class="label">Email</label>
-    <input type="email" id="customerEmail" placeholder="your@email.com" required>
+    <label class="label" for="customerEmail">Email</label>
+    <input type="email" id="customerEmail" placeholder="your@email.com" required maxlength="200">
 
-    <label class="label">Phone (optional)</label>
-    <input type="tel" id="customerPhone" placeholder="(555) 123-4567">
+    <label class="label" for="customerPhone">Phone (optional)</label>
+    <input type="tel" id="customerPhone" placeholder="(555) 123-4567" maxlength="20">
 
-    <label class="label">Date</label>
+    <label class="label" for="bookingDate">Date</label>
     <input type="date" id="bookingDate" onchange="loadSlots()">
 
     <label class="label">Available Times</label>
-    <div class="slots" id="timeSlots">
+    <div class="slots" id="timeSlots" role="group" aria-label="Available time slots">
       <div class="loading">Select a date above</div>
     </div>
 
-    <label class="label">Notes (optional)</label>
-    <input type="text" id="bookingNotes" placeholder="Any special requests...">
+    <label class="label" for="bookingNotes">Notes (optional)</label>
+    <input type="text" id="bookingNotes" placeholder="Any special requests..." maxlength="500">
 
     <button class="btn" id="submitBtn" onclick="submitBooking()" disabled>
       Confirm Booking
@@ -88,7 +88,7 @@
     <button class="btn" style="margin-top:16px" onclick="location.reload()">Book Another</button>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" onerror="showError()"></script>
   <script>
     const SUPABASE_URL = 'https://wwufvfrnxhmfinmimltz.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_-bHXBCQW4NhMShsKTE3Pvg_N92f-1d7';
@@ -98,6 +98,13 @@
     const slug = params.get('slug') || '';
 
     let sb, userId, services = [], selectedTime = null, defaultDuration = 30;
+    let _submitting = false;
+
+    // HTML escaper for XSS prevention
+    function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+    // Email validation
+    function isValidEmail(e){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
 
     async function init(){
       if(!slug){
@@ -105,7 +112,17 @@
         return;
       }
 
-      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      if(!window.supabase){
+        showError();
+        return;
+      }
+
+      try {
+        sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      } catch(e){
+        showError();
+        return;
+      }
 
       // Look up user by slug
       const { data: profile, error } = await sb
@@ -147,20 +164,25 @@
 
       // Build service selector
       if(services.length > 1){
-        let html = '<label class="label">Service</label><select id="serviceSelect" onchange="onServiceChange()">';
+        let html = '<label class="label" for="serviceSelect">Service</label><select id="serviceSelect" onchange="onServiceChange()">';
         services.forEach(s => {
-          html += '<option value="' + s.id + '" data-duration="' + (s.duration || defaultDuration) + '">' + s.name + (s.rate ? ' — $' + s.rate : '') + '</option>';
+          html += '<option value="' + esc(s.id) + '" data-duration="' + (s.duration || defaultDuration) + '">' + esc(s.name) + (s.rate ? ' — $' + esc(String(s.rate)) : '') + '</option>';
         });
         html += '</select>';
         document.getElementById('serviceSection').innerHTML = html;
       } else if(services.length === 1){
         document.getElementById('serviceSection').innerHTML =
-          '<input type="hidden" id="serviceSelect" value="' + services[0].id + '">' +
-          '<div class="info-row"><span>Service</span><strong>' + services[0].name + '</strong></div>';
+          '<input type="hidden" id="serviceSelect" value="' + esc(services[0].id) + '">' +
+          '<div class="info-row"><span>Service</span><strong>' + esc(services[0].name) + '</strong></div>';
         document.getElementById('durationLabel').textContent = (services[0].duration || defaultDuration) + ' min';
+      } else {
+        // No bookable services
+        document.getElementById('serviceSection').innerHTML =
+          '<div class="info-row"><span>No services available for booking at this time.</span></div>';
+        document.getElementById('submitBtn').style.display = 'none';
       }
 
-      // Set min date
+      // Set min date to today
       document.getElementById('bookingDate').min = new Date().toISOString().split('T')[0];
 
       // Show form
@@ -188,6 +210,13 @@
       const date = document.getElementById('bookingDate').value;
       if(!date) return;
 
+      // Validate date is today or future
+      const today = new Date().toISOString().split('T')[0];
+      if(date < today){
+        document.getElementById('timeSlots').innerHTML = '<div class="loading">Please select today or a future date</div>';
+        return;
+      }
+
       const slotsDiv = document.getElementById('timeSlots');
       slotsDiv.innerHTML = '<div class="loading">Loading available times...</div>';
       selectedTime = null;
@@ -196,7 +225,7 @@
       const serviceId = document.getElementById('serviceSelect')?.value || '';
       const service = services.find(s => s.id === serviceId);
 
-      // Get existing bookings for that date
+      // Get existing bookings for that date only
       const { data: existingBookings } = await sb
         .from('bookings')
         .select('data')
@@ -205,7 +234,7 @@
 
       const bookedSlots = (existingBookings || [])
         .map(b => b.data)
-        .filter(b => b.date === date)
+        .filter(b => b && b.date === date && b.status !== 'cancelled')
         .map(b => b.time);
 
       // Get events for that date
@@ -217,7 +246,7 @@
 
       const busyTimes = (existingEvents || [])
         .map(e => e.data)
-        .filter(e => e.date === date)
+        .filter(e => e && e.date === date)
         .map(e => e.time);
 
       // Generate slots
@@ -258,13 +287,17 @@
       }
 
       slotsDiv.innerHTML = slots.map(t =>
-        '<div class="slot" onclick="selectSlot(this,\'' + t + '\')">' + formatTime(t) + '</div>'
+        '<div class="slot" tabindex="0" role="button" aria-label="' + formatTime(t) + '" onclick="selectSlot(this,\'' + t + '\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();selectSlot(this,\'' + t + '\')}">' + formatTime(t) + '</div>'
       ).join('');
     }
 
     function selectSlot(el, time){
-      document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+      document.querySelectorAll('.slot').forEach(s => {
+        s.classList.remove('selected');
+        s.setAttribute('aria-pressed', 'false');
+      });
       el.classList.add('selected');
+      el.setAttribute('aria-pressed', 'true');
       selectedTime = time;
       document.getElementById('submitBtn').disabled = false;
     }
@@ -279,63 +312,102 @@
     }
 
     async function submitBooking(){
-      const customer = document.getElementById('customerName').value.trim();
-      const email = document.getElementById('customerEmail').value.trim();
-      const phone = document.getElementById('customerPhone').value.trim();
+      if(_submitting) return;
+
+      const customer = document.getElementById('customerName').value.trim().substring(0, 100);
+      const email = document.getElementById('customerEmail').value.trim().substring(0, 200);
+      const phone = document.getElementById('customerPhone').value.trim().substring(0, 20);
       const date = document.getElementById('bookingDate').value;
-      const notes = document.getElementById('bookingNotes').value.trim();
+      const notes = document.getElementById('bookingNotes').value.trim().substring(0, 500);
       const serviceId = document.getElementById('serviceSelect')?.value || '';
 
       if(!customer){ alert('Please enter your name'); return; }
-      if(!email || !email.includes('@')){ alert('Please enter a valid email'); return; }
+      if(!isValidEmail(email)){ alert('Please enter a valid email address'); return; }
       if(!date){ alert('Please select a date'); return; }
       if(!selectedTime){ alert('Please select a time'); return; }
 
+      // Validate date is still in the future
+      const today = new Date().toISOString().split('T')[0];
+      if(date < today){ alert('Please select today or a future date'); return; }
+
+      _submitting = true;
       const btn = document.getElementById('submitBtn');
       btn.disabled = true;
       btn.textContent = 'Booking...';
 
-      const bookingId = 'id_' + Math.random().toString(36).substr(2, 9);
-      const now = new Date().toISOString();
+      try {
+        // Re-check availability before inserting (prevent double-booking)
+        const { data: recheck } = await sb
+          .from('bookings')
+          .select('data')
+          .eq('user_id', userId)
+          .is('deleted_at', null);
 
-      const { error } = await sb.from('bookings').insert({
-        id: bookingId,
-        user_id: userId,
-        data: {
+        const alreadyBooked = (recheck || [])
+          .map(b => b.data)
+          .filter(b => b && b.date === date && b.status !== 'cancelled')
+          .map(b => b.time);
+
+        if(alreadyBooked.includes(selectedTime)){
+          alert('Sorry, this time slot was just booked. Please select another time.');
+          btn.disabled = false;
+          btn.textContent = 'Confirm Booking';
+          _submitting = false;
+          loadSlots(); // Refresh available slots
+          return;
+        }
+
+        const bookingId = 'id_' + crypto.randomUUID().replace(/-/g,'').substring(0, 12);
+        const now = new Date().toISOString();
+
+        const { error } = await sb.from('bookings').insert({
           id: bookingId,
-          customer: customer,
-          email: email,
-          phone: phone,
-          date: date,
-          time: selectedTime,
-          serviceId: serviceId,
-          status: 'pending',
-          notes: notes,
-          source: 'online',
-          created: now
-        },
-        client_updated_at: now,
-        version: 1
-      });
+          user_id: userId,
+          data: {
+            id: bookingId,
+            customer: customer,
+            email: email,
+            phone: phone,
+            date: date,
+            time: selectedTime,
+            serviceId: serviceId,
+            status: 'pending',
+            notes: notes,
+            source: 'online',
+            created: now
+          },
+          client_updated_at: now,
+          version: 1
+        });
 
-      if(error){
-        alert('Booking failed. Please try again.');
+        if(error){
+          alert('Booking failed. Please try again.');
+          btn.disabled = false;
+          btn.textContent = 'Confirm Booking';
+          _submitting = false;
+          return;
+        }
+
+        document.getElementById('bookingForm').style.display = 'none';
+        document.getElementById('successMsg').style.display = 'block';
+        document.getElementById('confirmDetails').textContent =
+          customer + ' — ' + date + ' at ' + formatTime(selectedTime);
+      } catch(e) {
+        alert('Something went wrong. Please try again.');
         btn.disabled = false;
         btn.textContent = 'Confirm Booking';
-        return;
+        _submitting = false;
       }
-
-      document.getElementById('bookingForm').style.display = 'none';
-      document.getElementById('successMsg').style.display = 'block';
-      document.getElementById('confirmDetails').textContent =
-        customer + ' — ' + date + ' at ' + formatTime(selectedTime);
     }
 
     // Start
     if(window.supabase){
       init();
     } else {
-      window.addEventListener('load', init);
+      window.addEventListener('load', function(){
+        if(window.supabase) init();
+        else showError();
+      });
     }
   </script>
 </body>
