@@ -9435,21 +9435,29 @@ body.crossroads-active {
             <input type="hidden" id="evtRecurrence" value="">
           </div>
           
+          <!-- Assign field -->
+          <div class="hx-field hidden" id="evtFieldAssign">
+            <div class="hx-field-label">ASSIGN TO TEAM MEMBER</div>
+            <select class="hx-field-select" id="evtAssignTo">
+              <option value="">— Unassigned —</option>
+            </select>
+          </div>
+
           <!-- Notes field -->
           <div class="hx-field hidden" id="evtFieldNotes">
             <textarea class="hx-field-textarea" id="evtNotes" placeholder="Add notes..."></textarea>
           </div>
-          
+
           <!-- SAVE field - card lights up -->
           <div class="hx-field hidden" id="evtFieldSave" style="text-align:center;padding:20px">
             <div style="font-family:Oswald;font-size:12px;letter-spacing:0.15em;color:var(--green);margin-bottom:12px">CARD READY</div>
             <div style="font-size:13px;color:var(--gray-light)">Drag card to place or tap SAVE</div>
           </div>
-          
+
         </div>
       </div>
     </div>
-      
+
       <!-- RIGHT: Category wheel -->
       <div class="hx-wheel-column">
         <div class="hx-wheel-overlay-top"></div>
@@ -9460,8 +9468,9 @@ body.crossroads-active {
           <div class="hx-wheel-item" data-cat="2" onclick="setEvtField(2)"><span class="hx-wheel-item-label">Time</span></div>
           <div class="hx-wheel-item" data-cat="3" onclick="setEvtField(3)"><span class="hx-wheel-item-label">Link</span></div>
           <div class="hx-wheel-item" data-cat="4" onclick="setEvtField(4)"><span class="hx-wheel-item-label">Remind</span></div>
-          <div class="hx-wheel-item" data-cat="5" onclick="setEvtField(5)"><span class="hx-wheel-item-label">Notes</span></div>
-          <div class="hx-wheel-item save" data-cat="6" onclick="setEvtField(6)"><span class="hx-wheel-item-label">✓ SAVE</span></div>
+          <div class="hx-wheel-item" data-cat="5" onclick="setEvtField(5)"><span class="hx-wheel-item-label">Assign</span></div>
+          <div class="hx-wheel-item" data-cat="6" onclick="setEvtField(6)"><span class="hx-wheel-item-label">Notes</span></div>
+          <div class="hx-wheel-item save" data-cat="7" onclick="setEvtField(7)"><span class="hx-wheel-item-label">✓ SAVE</span></div>
           <div class="hx-wheel-spacer"></div>
         </div>
         <div class="hx-wheel-overlay-bot"></div>
@@ -10357,12 +10366,20 @@ body.crossroads-active {
             </div>
           </div>
           
+          <!-- Assign field -->
+          <div class="hx-field hidden" id="jobFieldAssign">
+            <div class="hx-field-label">ASSIGN TO TEAM MEMBER</div>
+            <select class="hx-field-select" id="jobAssignTo">
+              <option value="">— Unassigned —</option>
+            </select>
+          </div>
+
           <!-- Notes field -->
           <div class="hx-field hidden" id="jobFieldNotes">
             <div class="hx-field-label">NOTES</div>
             <textarea class="hx-field-textarea" id="jobNotesInput" placeholder="Job notes, deliverables..." oninput="updateJobCardPreview()"></textarea>
           </div>
-          
+
           <!-- SAVE field - card lights up -->
           <div class="hx-field hidden" id="jobFieldSave" style="text-align:center;padding:20px">
             <div style="font-family:Oswald;font-size:12px;letter-spacing:0.15em;color:var(--green);margin-bottom:12px">CARD READY</div>
@@ -10370,7 +10387,7 @@ body.crossroads-active {
           </div>
         </div>
       </div>
-      
+
       <!-- RIGHT: Category wheel -->
       <div class="hx-wheel-column">
         <div class="hx-wheel-overlay-top"></div>
@@ -10380,8 +10397,9 @@ body.crossroads-active {
           <div class="hx-wheel-item" data-cat="1" onclick="setJobField(1)"><span class="hx-wheel-item-label">Client</span></div>
           <div class="hx-wheel-item" data-cat="2" onclick="setJobField(2)"><span class="hx-wheel-item-label">Service</span></div>
           <div class="hx-wheel-item" data-cat="3" onclick="setJobField(3)"><span class="hx-wheel-item-label">Status</span></div>
-          <div class="hx-wheel-item" data-cat="4" onclick="setJobField(4)"><span class="hx-wheel-item-label">Notes</span></div>
-          <div class="hx-wheel-item save" data-cat="5" onclick="setJobField(5)"><span class="hx-wheel-item-label">✓ SAVE</span></div>
+          <div class="hx-wheel-item" data-cat="4" onclick="setJobField(4)"><span class="hx-wheel-item-label">Assign</span></div>
+          <div class="hx-wheel-item" data-cat="5" onclick="setJobField(5)"><span class="hx-wheel-item-label">Notes</span></div>
+          <div class="hx-wheel-item save" data-cat="6" onclick="setJobField(6)"><span class="hx-wheel-item-label">✓ SAVE</span></div>
           <div class="hx-wheel-spacer"></div>
         </div>
         <div class="hx-wheel-overlay-bot"></div>
@@ -11283,11 +11301,19 @@ body.crossroads-active {
               <input type="hidden" id="taskProspectSel" value="">
             </div>
             
+            <!-- Assign field -->
+            <div class="hx-field hidden" id="taskFieldAssign">
+              <div class="hx-field-label">ASSIGN TO TEAM MEMBER</div>
+              <select class="hx-field-select" id="taskAssignTo">
+                <option value="">— Unassigned —</option>
+              </select>
+            </div>
+
             <!-- Notes field -->
             <div class="hx-field hidden" id="taskFieldNotes">
               <textarea class="hx-field-textarea" id="taskNotesInput" placeholder="Add notes..."></textarea>
             </div>
-            
+
             <!-- SAVE field - card lights up, becomes draggable -->
             <div class="hx-field hidden" id="taskFieldSave" style="text-align:center;padding:20px">
               <div style="font-family:Oswald;font-size:12px;letter-spacing:0.15em;color:var(--green);margin-bottom:12px">CARD READY</div>
@@ -11296,7 +11322,7 @@ body.crossroads-active {
           </div>
         </div>
       </div>
-      
+
       <!-- RIGHT: Category wheel -->
       <div class="hx-wheel-column">
         <div class="hx-wheel-overlay-top"></div>
@@ -11307,8 +11333,9 @@ body.crossroads-active {
           <div class="hx-wheel-item" data-cat="2" onclick="setTaskField(2)"><span class="hx-wheel-item-label">Priority</span></div>
           <div class="hx-wheel-item" data-cat="3" onclick="setTaskField(3)"><span class="hx-wheel-item-label">Due</span></div>
           <div class="hx-wheel-item" data-cat="4" onclick="setTaskField(4)"><span class="hx-wheel-item-label">Link</span></div>
-          <div class="hx-wheel-item" data-cat="5" onclick="setTaskField(5)"><span class="hx-wheel-item-label">Notes</span></div>
-          <div class="hx-wheel-item save" data-cat="6" onclick="setTaskField(6)"><span class="hx-wheel-item-label">✓ SAVE</span></div>
+          <div class="hx-wheel-item" data-cat="5" onclick="setTaskField(5)"><span class="hx-wheel-item-label">Assign</span></div>
+          <div class="hx-wheel-item" data-cat="6" onclick="setTaskField(6)"><span class="hx-wheel-item-label">Notes</span></div>
+          <div class="hx-wheel-item save" data-cat="7" onclick="setTaskField(7)"><span class="hx-wheel-item-label">✓ SAVE</span></div>
           <div class="hx-wheel-spacer"></div>
         </div>
         <div class="hx-wheel-overlay-bot"></div>
@@ -11910,12 +11937,20 @@ body.crossroads-active {
               <input type="hidden" id="bookingStatusVal" value="pending">
             </div>
             
+            <!-- Assign field -->
+            <div class="hx-field hidden" id="bookingFieldAssign">
+              <div class="hx-field-label">ASSIGN TO TEAM MEMBER</div>
+              <select class="hx-field-select" id="bookingAssignTo">
+                <option value="">— Unassigned —</option>
+              </select>
+            </div>
+
             <!-- Notes field -->
             <div class="hx-field hidden" id="bookingFieldNotes">
               <div class="hx-field-label">NOTES</div>
               <textarea class="hx-field-textarea" id="bookingNotesInput" placeholder="Special requests, location details..." oninput="updateBookingCardPreview()"></textarea>
             </div>
-            
+
             <!-- SAVE field - card lights up -->
             <div class="hx-field hidden" id="bookingFieldSave" style="text-align:center;padding:20px">
               <div style="font-family:Oswald;font-size:12px;letter-spacing:0.15em;color:var(--green);margin-bottom:12px">CARD READY</div>
@@ -11924,7 +11959,7 @@ body.crossroads-active {
           </div>
         </div>
       </div>
-      
+
       <!-- RIGHT: Category wheel -->
       <div class="hx-wheel-column">
         <div class="hx-wheel-overlay-top"></div>
@@ -11934,8 +11969,9 @@ body.crossroads-active {
           <div class="hx-wheel-item" data-cat="1" onclick="setBookingField(1)"><span class="hx-wheel-item-label">Service</span></div>
           <div class="hx-wheel-item" data-cat="2" onclick="setBookingField(2)"><span class="hx-wheel-item-label">Date/Time</span></div>
           <div class="hx-wheel-item" data-cat="3" onclick="setBookingField(3)"><span class="hx-wheel-item-label">Status</span></div>
-          <div class="hx-wheel-item" data-cat="4" onclick="setBookingField(4)"><span class="hx-wheel-item-label">Notes</span></div>
-          <div class="hx-wheel-item save" data-cat="5" onclick="setBookingField(5)"><span class="hx-wheel-item-label">✓ SAVE</span></div>
+          <div class="hx-wheel-item" data-cat="4" onclick="setBookingField(4)"><span class="hx-wheel-item-label">Assign</span></div>
+          <div class="hx-wheel-item" data-cat="5" onclick="setBookingField(5)"><span class="hx-wheel-item-label">Notes</span></div>
+          <div class="hx-wheel-item save" data-cat="6" onclick="setBookingField(6)"><span class="hx-wheel-item-label">✓ SAVE</span></div>
           <div class="hx-wheel-spacer"></div>
         </div>
         <div class="hx-wheel-overlay-bot"></div>
@@ -12186,12 +12222,20 @@ body.crossroads-active {
             <input type="date" class="hx-field-input" id="prospectFollowupInput" oninput="updateProspectCardPreview()">
           </div>
           
+          <!-- Assign field -->
+          <div class="hx-field hidden" id="prospectFieldAssign">
+            <div class="hx-field-label">ASSIGN TO TEAM MEMBER</div>
+            <select class="hx-field-select" id="prospectAssignTo">
+              <option value="">— Unassigned —</option>
+            </select>
+          </div>
+
           <!-- Notes field -->
           <div class="hx-field hidden" id="prospectFieldNotes">
             <div class="hx-field-label">NOTES</div>
             <textarea class="hx-field-textarea" id="prospectNotesInput" placeholder="Add notes..." oninput="updateProspectCardPreview()"></textarea>
           </div>
-          
+
           <!-- SAVE field - card lights up -->
           <div class="hx-field hidden" id="prospectFieldSave" style="text-align:center;padding:20px">
             <div style="font-family:Oswald;font-size:12px;letter-spacing:0.15em;color:var(--green);margin-bottom:12px">CARD READY</div>
@@ -12199,7 +12243,7 @@ body.crossroads-active {
           </div>
         </div>
       </div>
-      
+
       <!-- RIGHT: Category wheel -->
       <div class="hx-wheel-column">
         <div class="hx-wheel-overlay-top"></div>
@@ -12210,8 +12254,9 @@ body.crossroads-active {
           <div class="hx-wheel-item" data-cat="2" onclick="setProspectField(2)"><span class="hx-wheel-item-label">Type</span></div>
           <div class="hx-wheel-item" data-cat="3" onclick="setProspectField(3)"><span class="hx-wheel-item-label">Status</span></div>
           <div class="hx-wheel-item" data-cat="4" onclick="setProspectField(4)"><span class="hx-wheel-item-label">Follow-up</span></div>
-          <div class="hx-wheel-item" data-cat="5" onclick="setProspectField(5)"><span class="hx-wheel-item-label">Notes</span></div>
-          <div class="hx-wheel-item save" data-cat="6" onclick="setProspectField(6)"><span class="hx-wheel-item-label">✓ SAVE</span></div>
+          <div class="hx-wheel-item" data-cat="5" onclick="setProspectField(5)"><span class="hx-wheel-item-label">Assign</span></div>
+          <div class="hx-wheel-item" data-cat="6" onclick="setProspectField(6)"><span class="hx-wheel-item-label">Notes</span></div>
+          <div class="hx-wheel-item save" data-cat="7" onclick="setProspectField(7)"><span class="hx-wheel-item-label">✓ SAVE</span></div>
           <div class="hx-wheel-spacer"></div>
         </div>
         <div class="hx-wheel-overlay-bot"></div>
@@ -12742,6 +12787,10 @@ function renderCloudSettings(){
 
       <button class="share-gen-btn" style="background:linear-gradient(135deg,var(--purple) 0%,#7c3aed 100%);box-shadow:0 0 15px var(--purple-glow)" onclick="this.closest('.share-avail-modal').remove();renderWorkspaceSettings()">
         Team Workspace
+      </button>
+
+      <button class="share-gen-btn" style="background:linear-gradient(135deg,var(--cyan) 0%,#0891b2 100%);box-shadow:0 0 15px rgba(6,182,212,0.3)" onclick="this.closest('.share-avail-modal').remove();renderTeamDashboard()">
+        Team Dashboard
       </button>
 
       <button class="share-gen-btn" style="background:var(--amber);box-shadow:0 0 15px var(--amber-glow)" onclick="generateLinkCode()">
@@ -13647,7 +13696,7 @@ async function getWorkspaceMembers(workspaceId){
   if(!sb) return [];
 
   const { data } = await sb.from('workspace_members')
-    .select('user_id, role, profiles(email, display_name)')
+    .select('user_id, role, title, profiles(email, display_name)')
     .eq('workspace_id', workspaceId);
 
   return data || [];
@@ -13795,11 +13844,20 @@ async function loadWorkspaceUI(){
         <div style="font-size:11px;color:var(--cyan);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Members (${members.length})</div>
         ${members.map(m => `
           <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #1a1a1a">
-            <span style="font-size:13px;color:#ccc">${esc(m.profiles?.display_name || m.profiles?.email || 'User')}</span>
+            <div>
+              <span style="font-size:13px;color:#ccc">${esc(m.profiles?.display_name || m.profiles?.email || 'User')}</span>
+              ${m.title ? '<div style="font-size:10px;color:var(--amber)">' + esc(m.title) + '</div>' : ''}
+            </div>
             <span style="font-size:11px;color:#666">${esc(m.role)}</span>
           </div>
         `).join('')}
       </div>`;
+
+    // Team Dashboard button
+    html += `
+      <button class="share-gen-btn" style="background:linear-gradient(135deg,var(--cyan) 0%,#0891b2 100%);box-shadow:0 0 15px rgba(6,182,212,0.3);margin:0" onclick="document.getElementById('workspaceModal')?.remove();renderTeamDashboard()">
+        Open Team Dashboard
+      </button>`;
 
     if(isAdmin){
       html += `
@@ -14113,7 +14171,11 @@ function switchToEvtEditMode(){
   
   // Recurrence
   document.getElementById('evtRecurrence').value = evt.recurrence || '';
-  
+
+  // AssignedTo (picker populated lazily when field shown)
+  const evtAssignSel = document.getElementById('evtAssignTo');
+  if(evtAssignSel) evtAssignSel.value = evt.assignedTo || '';
+
   // Subtasks
   editingSubtasks = evt.subtasks ? [...evt.subtasks] : [];
   renderSubtasks();
@@ -14288,7 +14350,7 @@ function handleEvtCardTap(e){
 
 // Category wheel - matches CRM wheel pattern exactly
 let evtActiveField = 0;
-const evtFieldIds = ['evtFieldTitle','evtFieldType','evtFieldTime','evtFieldLink','evtFieldRemind','evtFieldNotes','evtFieldSave'];
+const evtFieldIds = ['evtFieldTitle','evtFieldType','evtFieldTime','evtFieldLink','evtFieldRemind','evtFieldAssign','evtFieldNotes','evtFieldSave'];
 
 function setupEvtCatWheel(){
   const wheel = document.getElementById('evtCatWheel');
@@ -14372,9 +14434,12 @@ function setEvtField(index, fromScroll = false){
     if(el) el.classList.toggle('hidden', i !== index);
   });
   
-  // When SAVE selected (index 6), light up the card
+  // When Assign field selected, populate team member picker
+  if(index === 5) populateAssignPicker('evtAssignTo');
+
+  // When SAVE selected (index 7), light up the card
   const card = document.getElementById('evtCard');
-  if(index === 6){
+  if(index === 7){
     if(card){
       card.classList.add('save-ready');
       card.setAttribute('draggable', 'true');
@@ -15284,6 +15349,7 @@ function saveEvt(){
       evt.reminders=reminders;
       evt.recurrence=recurrence;
       evt.subtasks=subtasks;
+      evt.assignedTo=document.getElementById('evtAssignTo')?.value||'';
     }
   }else{
     // Create new
@@ -15299,7 +15365,8 @@ function saveEvt(){
       prospectId:prospectId,
       reminders:reminders,
       recurrence:recurrence,
-      subtasks:subtasks
+      subtasks:subtasks,
+      assignedTo:document.getElementById('evtAssignTo')?.value||''
     };
     S.events.push(newEvt);
 
@@ -19507,7 +19574,11 @@ function populateProspectEditMode(p, id){
   document.getElementById('prospectStatusVal').value = p?.status || 'lead';
   document.getElementById('prospectFollowupInput').value = p?.followUp || '';
   document.getElementById('prospectNotesInput').value = p?.notes || '';
-  
+
+  // Set assignedTo value (picker populated lazily when field shown)
+  const prospectAssignSel = document.getElementById('prospectAssignTo');
+  if(prospectAssignSel) prospectAssignSel.value = p?.assignedTo || '';
+
   // Update chips
   document.querySelectorAll('#prospectFieldType .hx-chip').forEach(c => {
     c.classList.toggle('selected', c.dataset.val === (p?.type || 'other'));
@@ -19663,7 +19734,7 @@ function setProspectField(idx, fromScroll = false){
   if(window.prospectCurrentField === idx) return;
   window.prospectCurrentField = idx;
   
-  const fields = ['prospectFieldBiz','prospectFieldContact','prospectFieldType','prospectFieldStatus','prospectFieldFollowup','prospectFieldNotes','prospectFieldSave'];
+  const fields = ['prospectFieldBiz','prospectFieldContact','prospectFieldType','prospectFieldStatus','prospectFieldFollowup','prospectFieldAssign','prospectFieldNotes','prospectFieldSave'];
   fields.forEach((f,i) => {
     const el = document.getElementById(f);
     if(el) el.classList.toggle('hidden', i !== idx);
@@ -19671,10 +19742,13 @@ function setProspectField(idx, fromScroll = false){
   document.querySelectorAll('#prospectCatWheel .hx-wheel-item').forEach(item => {
     item.classList.toggle('selected', parseInt(item.dataset.cat) === idx);
   });
-  
-  // When SAVE selected (index 6), light up the card
+
+  // When Assign field selected, populate team member picker
+  if(idx === 5) populateAssignPicker('prospectAssignTo');
+
+  // When SAVE selected (index 7), light up the card
   const card = document.getElementById('prospectCard');
-  if(idx === 6){
+  if(idx === 7){
     if(card){
       card.classList.add('save-ready');
       card.setAttribute('draggable', 'true');
@@ -19766,7 +19840,8 @@ function saveProspectFromModal(){
     type: document.getElementById('prospectTypeVal').value || 'other',
     status: document.getElementById('prospectStatusVal').value || 'lead',
     followUp: document.getElementById('prospectFollowupInput').value || '',
-    notes: document.getElementById('prospectNotesInput').value.trim() || ''
+    notes: document.getElementById('prospectNotesInput').value.trim() || '',
+    assignedTo: document.getElementById('prospectAssignTo')?.value || ''
   };
   
   let prospectId = id;
@@ -20917,7 +20992,11 @@ function populateTaskEditMode(task, id){
   document.getElementById('taskDueInput').value = task?.due || defaultDate;
   document.getElementById('taskTimeInput').value = task?.time || '09:00';
   document.getElementById('taskNotesInput').value = task?.notes || '';
-  
+
+  // Set assignedTo value (picker populated lazily when field shown)
+  const taskAssignSel = document.getElementById('taskAssignTo');
+  if(taskAssignSel) taskAssignSel.value = task?.assignedTo || '';
+
   // Populate prospect picker
   const sel = document.getElementById('taskProspectSel');
   const picker = document.getElementById('taskProspectPicker');
@@ -21381,7 +21460,7 @@ function setTaskField(idx, fromScroll = false){
   if(window.taskCurrentField === idx) return;
   window.taskCurrentField = idx;
   
-  const fields = ['taskFieldTitle','taskFieldType','taskFieldPriority','taskFieldDue','taskFieldLink','taskFieldNotes','taskFieldSave'];
+  const fields = ['taskFieldTitle','taskFieldType','taskFieldPriority','taskFieldDue','taskFieldLink','taskFieldAssign','taskFieldNotes','taskFieldSave'];
   fields.forEach((f,i) => {
     const el = document.getElementById(f);
     if(el) el.classList.toggle('hidden', i !== idx);
@@ -21389,7 +21468,7 @@ function setTaskField(idx, fromScroll = false){
   document.querySelectorAll('#taskCatWheel .hx-wheel-item').forEach(item => {
     item.classList.toggle('selected', parseInt(item.dataset.cat) === idx);
   });
-  
+
   // Refresh smart contact field when navigating to Type field
   if(idx === 1){
     const type = document.getElementById('taskTypeVal').value;
@@ -21398,10 +21477,13 @@ function setTaskField(idx, fromScroll = false){
       showSmartContactField(type, prospectId);
     }
   }
-  
-  // When SAVE selected (index 6), light up the card
+
+  // When Assign field selected, populate team member picker
+  if(idx === 5) populateAssignPicker('taskAssignTo');
+
+  // When SAVE selected (index 7), light up the card
   const card = document.getElementById('taskCard');
-  if(idx === 6){
+  if(idx === 7){
     if(card){
       card.classList.add('save-ready');
       card.setAttribute('draggable', 'true');
@@ -21506,9 +21588,10 @@ function saveTaskFromModal(){
     due: document.getElementById('taskDueInput').value || '',
     time: document.getElementById('taskTimeInput').value || '',
     prospectId: document.getElementById('taskProspectSel').value || '',
-    notes: document.getElementById('taskNotesInput').value.trim() || ''
+    notes: document.getElementById('taskNotesInput').value.trim() || '',
+    assignedTo: document.getElementById('taskAssignTo')?.value || ''
   };
-  
+
   let taskId = id;
   if(id){
     const t = S.tasks.find(x => x.id === id);
@@ -23473,7 +23556,11 @@ function openJobModal(id){
   document.getElementById('jobTitleInput').value = j?.title || '';
   document.getElementById('jobStatusVal').value = j?.status || 'pending';
   document.getElementById('jobNotesInput').value = j?.notes || '';
-  
+
+  // Set assignedTo value (picker populated lazily when field shown)
+  const jobAssignSel = document.getElementById('jobAssignTo');
+  if(jobAssignSel) jobAssignSel.value = j?.assignedTo || '';
+
   // Update status chips
   document.querySelectorAll('#jobFieldStatus .hx-chip').forEach(c => {
     c.classList.toggle('selected', c.dataset.val === (j?.status || 'pending'));
@@ -23688,19 +23775,22 @@ function toggleJobTimerFromCard(){
 
 function setJobField(idx){
   window.jobCurrentField = idx;
-  const fields = ['jobFieldTitle','jobFieldClient','jobFieldService','jobFieldStatus','jobFieldNotes','jobFieldSave'];
+  const fields = ['jobFieldTitle','jobFieldClient','jobFieldService','jobFieldStatus','jobFieldAssign','jobFieldNotes','jobFieldSave'];
   fields.forEach((f,i) => {
     const el = document.getElementById(f);
     if(el) el.classList.toggle('hidden', i !== idx);
   });
-  
+
   document.querySelectorAll('#jobCatWheel .hx-wheel-item').forEach(item => {
     item.classList.toggle('selected', parseInt(item.dataset.cat) === idx);
   });
-  
-  // When SAVE selected (index 5), light up the card
+
+  // When Assign field selected, populate team member picker
+  if(idx === 4) populateAssignPicker('jobAssignTo');
+
+  // When SAVE selected (index 6), light up the card
   const card = document.getElementById('jobCard');
-  if(idx === 5){
+  if(idx === 6){
     if(card){
       card.classList.add('save-ready');
       card.setAttribute('draggable', 'true');
@@ -23779,7 +23869,7 @@ function saveJob(){
   if(id){
     const idx = S.jobs.findIndex(j => j.id === id);
     if(idx >= 0){
-      S.jobs[idx] = {...S.jobs[idx], title, clientId, serviceId, status, notes, updated: new Date().toISOString()};
+      S.jobs[idx] = {...S.jobs[idx], title, clientId, serviceId, status, notes, assignedTo: document.getElementById('jobAssignTo')?.value || '', updated: new Date().toISOString()};
     }
   } else {
     jobId = uid();
@@ -23790,6 +23880,7 @@ function saveJob(){
       serviceId,
       status,
       notes,
+      assignedTo: document.getElementById('jobAssignTo')?.value || '',
       totalSeconds: 0,
       timeEntries: [],
       created: new Date().toISOString()
@@ -24931,7 +25022,11 @@ function openBookingModal(id){
   document.getElementById('bookingQtyInput').value = b?.qty || '';
   document.getElementById('bookingStatusVal').value = b?.status || 'pending';
   document.getElementById('bookingNotesInput').value = b?.notes || '';
-  
+
+  // Set assignedTo value (picker populated lazily when field shown)
+  const bookingAssignSel = document.getElementById('bookingAssignTo');
+  if(bookingAssignSel) bookingAssignSel.value = b?.assignedTo || '';
+
   // Populate services dropdown
   const sel = document.getElementById('bookingServiceSel');
   sel.innerHTML = '<option value="">— Select Service —</option>' + 
@@ -25052,7 +25147,7 @@ function selectBookingStatus(val){
 
 function setBookingField(idx){
   window.bookingCurrentField = idx;
-  const fields = ['bookingFieldCustomer','bookingFieldService','bookingFieldDateTime','bookingFieldStatus','bookingFieldNotes','bookingFieldSave'];
+  const fields = ['bookingFieldCustomer','bookingFieldService','bookingFieldDateTime','bookingFieldStatus','bookingFieldAssign','bookingFieldNotes','bookingFieldSave'];
   fields.forEach((f,i) => {
     const el = document.getElementById(f);
     if(el) el.classList.toggle('hidden', i !== idx);
@@ -25060,10 +25155,13 @@ function setBookingField(idx){
   document.querySelectorAll('#bookingCatWheel .hx-wheel-item').forEach(item => {
     item.classList.toggle('selected', parseInt(item.dataset.cat) === idx);
   });
-  
-  // When SAVE selected (index 5), light up the card
+
+  // When Assign field selected, populate team member picker
+  if(idx === 4) populateAssignPicker('bookingAssignTo');
+
+  // When SAVE selected (index 6), light up the card
   const card = document.getElementById('bookingCard');
-  if(idx === 5){
+  if(idx === 6){
     if(card){
       card.classList.add('save-ready');
       card.setAttribute('draggable', 'true');
@@ -25159,7 +25257,8 @@ function saveBookingFromModal(){
     date: document.getElementById('bookingDateInput').value,
     time: document.getElementById('bookingTimeInput').value,
     status: document.getElementById('bookingStatusVal').value || 'pending',
-    notes: document.getElementById('bookingNotesInput').value.trim()
+    notes: document.getElementById('bookingNotesInput').value.trim(),
+    assignedTo: document.getElementById('bookingAssignTo')?.value || ''
   };
   
   S.bookings = S.bookings || [];
@@ -38644,6 +38743,425 @@ function installApp(){
 function dismissInstall(){
   document.getElementById('installBanner')?.remove();
   localStorage.setItem('helixInstallDismissed', 'true');
+}
+
+// ============================================
+// TEAM LEAD FEATURES
+// ============================================
+
+// --- Cached workspace members for pickers ---
+let _cachedTeamMembers = null;
+let _cachedTeamMembersAt = 0;
+
+async function fetchTeamMembers(){
+  // Cache for 30 seconds
+  if(_cachedTeamMembers && Date.now() - _cachedTeamMembersAt < 30000) return _cachedTeamMembers;
+  const sb = getSupabase();
+  if(!sb) return [];
+  const ws = await getMyWorkspace();
+  if(!ws) return [];
+  const members = await getWorkspaceMembers(ws.workspace_id);
+  _cachedTeamMembers = members;
+  _cachedTeamMembersAt = Date.now();
+  return members;
+}
+
+async function populateAssignPicker(selectId){
+  const sel = document.getElementById(selectId);
+  if(!sel) return;
+  const currentVal = sel.value;
+  const members = await fetchTeamMembers();
+  if(!members || members.length < 2){
+    // Solo user — hide the assign field or show message
+    sel.innerHTML = '<option value="">— No team members —</option>';
+    return;
+  }
+  let html = '<option value="">— Unassigned —</option>';
+  members.forEach(m => {
+    const name = esc(m.profiles?.display_name || m.profiles?.email || 'User');
+    const titleText = m.title ? ' (' + esc(m.title) + ')' : '';
+    html += '<option value="' + esc(m.user_id) + '">' + name + titleText + '</option>';
+  });
+  sel.innerHTML = html;
+  if(currentVal) sel.value = currentVal;
+}
+
+function getTeamMemberName(userId, members){
+  if(!userId || !members) return 'Unassigned';
+  const m = members.find(x => x.user_id === userId);
+  return m ? (m.profiles?.display_name || m.profiles?.email || 'User') : 'Unassigned';
+}
+
+function getTeamMemberTitle(userId, members){
+  if(!userId || !members) return '';
+  const m = members.find(x => x.user_id === userId);
+  return m?.title || '';
+}
+
+// --- Update member title ---
+async function updateMemberTitle(memberId, newTitle){
+  const sb = getSupabase();
+  if(!sb) return;
+  const { error } = await sb.from('workspace_members')
+    .update({ title: newTitle })
+    .eq('user_id', memberId)
+    .eq('workspace_id', (await getMyWorkspace())?.workspace_id);
+  if(error){ toast('Failed to update title: ' + error.message); return; }
+  _cachedTeamMembers = null; // bust cache
+  toast('Title updated');
+}
+
+// --- Team Dashboard ---
+async function renderTeamDashboard(){
+  const sb = getSupabase();
+  if(!sb){ toast('Cloud sync required'); return; }
+  const user = await helixGetUser();
+  if(!user){ toast('Sign in first'); return; }
+  const ws = await getMyWorkspace();
+  if(!ws){ toast('No workspace found'); return; }
+
+  const isAdmin = ws.role === 'owner' || ws.role === 'admin';
+  const members = await getWorkspaceMembers(ws.workspace_id);
+
+  if(!members || members.length === 0){
+    toast('No team members found');
+    return;
+  }
+
+  // Get today's date string
+  const today = new Date().toISOString().split('T')[0];
+
+  const modal = document.createElement('div');
+  modal.className = 'share-avail-modal';
+  modal.id = 'teamDashboardModal';
+
+  let cardsHtml = '';
+  members.forEach(m => {
+    const mName = esc(m.profiles?.display_name || m.profiles?.email || 'User');
+    const mTitle = m.title ? esc(m.title) : '<span style="color:#555;font-style:italic">No title</span>';
+    const mId = m.user_id;
+
+    // Count today's events/bookings for this member
+    const todayEvents = (S.events || []).filter(e => e.assignedTo === mId && e.date === today).length;
+    const todayBookings = (S.bookings || []).filter(b => b.assignedTo === mId && b.date === today).length;
+    const scheduleCount = todayEvents + todayBookings;
+
+    // Count active tasks
+    const activeTasks = (S.tasks || []).filter(t => t.assignedTo === mId && !t.done).length;
+
+    // Count assigned prospects
+    const assignedProspects = (S.prospects || []).filter(p => p.assignedTo === mId).length;
+
+    // Assigned jobs
+    const assignedJobs = (S.jobs || []).filter(j => j.assignedTo === mId).length;
+
+    const titleEditHtml = isAdmin ? `
+      <div style="display:flex;gap:6px;align-items:center;margin-top:6px">
+        <input type="text" value="${esc(m.title || '')}" placeholder="Set title..." id="titleInput_${esc(mId)}"
+          style="flex:1;padding:6px 8px;border-radius:6px;background:#1a1a1a;border:1px solid #333;color:#ccc;font-size:11px;outline:none">
+        <button style="padding:4px 8px;border-radius:6px;background:var(--amber);border:none;color:#000;font-size:10px;font-family:Oswald;cursor:pointer;letter-spacing:0.05em"
+          onclick="updateMemberTitle('${esc(mId)}', document.getElementById('titleInput_${esc(mId)}').value)">SET</button>
+      </div>` : '';
+
+    cardsHtml += `
+      <div class="team-member-card" style="padding:14px;border-radius:10px;background:#111;border:1px solid #333;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-family:Oswald;font-size:15px;color:#eee;letter-spacing:0.05em">${mName}</div>
+            <div style="font-size:11px;color:var(--amber);margin-top:2px">${mTitle}</div>
+          </div>
+          <div style="font-size:10px;color:#555">${esc(m.role)}</div>
+        </div>
+        ${titleEditHtml}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+          <div style="padding:8px;border-radius:6px;background:#0d0d0d;text-align:center">
+            <div style="font-family:Oswald;font-size:18px;color:var(--cyan)">${scheduleCount}</div>
+            <div style="font-size:9px;color:#666;text-transform:uppercase;letter-spacing:0.1em">Today Schedule</div>
+          </div>
+          <div style="padding:8px;border-radius:6px;background:#0d0d0d;text-align:center">
+            <div style="font-family:Oswald;font-size:18px;color:var(--purple)">${activeTasks}</div>
+            <div style="font-size:9px;color:#666;text-transform:uppercase;letter-spacing:0.1em">Active Tasks</div>
+          </div>
+          <div style="padding:8px;border-radius:6px;background:#0d0d0d;text-align:center">
+            <div style="font-family:Oswald;font-size:18px;color:var(--amber)">${assignedProspects}</div>
+            <div style="font-size:9px;color:#666;text-transform:uppercase;letter-spacing:0.1em">Prospects</div>
+          </div>
+          <div style="padding:8px;border-radius:6px;background:#0d0d0d;text-align:center">
+            <div style="font-family:Oswald;font-size:18px;color:var(--green)">${assignedJobs}</div>
+            <div style="font-size:9px;color:#666;text-transform:uppercase;letter-spacing:0.1em">Jobs</div>
+          </div>
+        </div>
+        <button style="width:100%;margin-top:10px;padding:10px;border-radius:8px;background:linear-gradient(135deg,#1a1a1a,#111);border:1px solid #333;color:var(--cyan);font-family:Oswald;font-size:12px;letter-spacing:0.1em;cursor:pointer"
+          onclick="expandTeamMember('${esc(mId)}')">VIEW DETAILS</button>
+      </div>`;
+  });
+
+  modal.innerHTML = `
+    <div class="share-avail-content" style="max-width:480px;max-height:90vh;overflow-y:auto">
+      <div class="share-avail-header">
+        <h3>TEAM DASHBOARD</h3>
+        <button class="share-avail-close" onclick="this.closest('.share-avail-modal').remove()">&#10005;</button>
+      </div>
+      <div style="padding:16px;display:flex;flex-direction:column;gap:4px" id="teamDashboardBody">
+        <div style="padding:8px 12px;border-radius:8px;background:#111;border:1px solid var(--green);border-left:3px solid var(--green);margin-bottom:8px">
+          <div style="font-size:11px;color:var(--green);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:2px">${esc(ws.workspaces?.name || 'Team')}</div>
+          <div style="font-size:12px;color:#888">${members.length} member${members.length !== 1 ? 's' : ''}</div>
+        </div>
+        ${cardsHtml}
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+// --- Expand a single team member's detail view ---
+async function expandTeamMember(userId){
+  const members = await fetchTeamMembers();
+  const member = members.find(m => m.user_id === userId);
+  if(!member) return;
+
+  const mName = esc(member.profiles?.display_name || member.profiles?.email || 'User');
+  const mTitle = member.title ? esc(member.title) : '';
+  const today = new Date().toISOString().split('T')[0];
+
+  // Remove existing detail modal if present
+  const existing = document.getElementById('teamMemberDetailModal');
+  if(existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.className = 'share-avail-modal';
+  modal.id = 'teamMemberDetailModal';
+
+  // Gather member's data
+  const memberEvents = (S.events || []).filter(e => e.assignedTo === userId);
+  const memberBookings = (S.bookings || []).filter(b => b.assignedTo === userId);
+  const memberTasks = (S.tasks || []).filter(t => t.assignedTo === userId);
+  const memberProspects = (S.prospects || []).filter(p => p.assignedTo === userId);
+  const memberJobs = (S.jobs || []).filter(j => j.assignedTo === userId);
+
+  // Default to day view
+  let scheduleHtml = renderTeamMemberSchedule(userId, 'day', today);
+  let tasksHtml = renderTeamMemberTasks(memberTasks, 'all');
+  let prospectsHtml = renderTeamMemberProspects(memberProspects);
+  let jobsHtml = renderTeamMemberJobs(memberJobs);
+
+  modal.innerHTML = `
+    <div class="share-avail-content" style="max-width:500px;max-height:92vh;overflow-y:auto">
+      <div class="share-avail-header">
+        <h3>${mName}${mTitle ? ' <span style="font-size:12px;color:var(--amber);font-weight:normal">(' + mTitle + ')</span>' : ''}</h3>
+        <button class="share-avail-close" onclick="this.closest('.share-avail-modal').remove()">&#10005;</button>
+      </div>
+      <div style="padding:16px;display:flex;flex-direction:column;gap:16px">
+
+        <!-- Schedule Section -->
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-family:Oswald;font-size:13px;color:var(--cyan);letter-spacing:0.1em">SCHEDULE</div>
+            <div style="display:flex;gap:4px">
+              <button class="team-view-toggle on" id="teamSchedDay_${esc(userId)}" style="padding:4px 10px;border-radius:4px;background:var(--cyan);border:none;color:#000;font-size:10px;font-family:Oswald;cursor:pointer;letter-spacing:0.05em"
+                onclick="switchTeamScheduleView('${esc(userId)}','day')">DAY</button>
+              <button class="team-view-toggle" id="teamSchedWeek_${esc(userId)}" style="padding:4px 10px;border-radius:4px;background:#333;border:none;color:#aaa;font-size:10px;font-family:Oswald;cursor:pointer;letter-spacing:0.05em"
+                onclick="switchTeamScheduleView('${esc(userId)}','week')">WEEK</button>
+            </div>
+          </div>
+          <div id="teamScheduleContainer_${esc(userId)}">${scheduleHtml}</div>
+        </div>
+
+        <!-- Tasks Section -->
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <div style="font-family:Oswald;font-size:13px;color:var(--purple);letter-spacing:0.1em">TASKS</div>
+            <div style="display:flex;gap:4px">
+              <button id="teamTaskAll_${esc(userId)}" style="padding:4px 10px;border-radius:4px;background:var(--purple);border:none;color:#000;font-size:10px;font-family:Oswald;cursor:pointer;letter-spacing:0.05em"
+                onclick="filterTeamTasks('${esc(userId)}','all')">ALL</button>
+              <button id="teamTaskTodo_${esc(userId)}" style="padding:4px 10px;border-radius:4px;background:#333;border:none;color:#aaa;font-size:10px;font-family:Oswald;cursor:pointer;letter-spacing:0.05em"
+                onclick="filterTeamTasks('${esc(userId)}','todo')">TODO</button>
+              <button id="teamTaskDone_${esc(userId)}" style="padding:4px 10px;border-radius:4px;background:#333;border:none;color:#aaa;font-size:10px;font-family:Oswald;cursor:pointer;letter-spacing:0.05em"
+                onclick="filterTeamTasks('${esc(userId)}','done')">DONE</button>
+            </div>
+          </div>
+          <div id="teamTasksContainer_${esc(userId)}">${tasksHtml}</div>
+        </div>
+
+        <!-- Prospects Section -->
+        <div>
+          <div style="font-family:Oswald;font-size:13px;color:var(--amber);letter-spacing:0.1em;margin-bottom:8px">PROSPECTS</div>
+          <div id="teamProspectsContainer_${esc(userId)}">${prospectsHtml}</div>
+        </div>
+
+        <!-- Jobs Section -->
+        <div>
+          <div style="font-family:Oswald;font-size:13px;color:var(--green);letter-spacing:0.1em;margin-bottom:8px">JOBS</div>
+          <div id="teamJobsContainer_${esc(userId)}">${jobsHtml}</div>
+        </div>
+
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function switchTeamScheduleView(userId, view){
+  const today = new Date().toISOString().split('T')[0];
+  const container = document.getElementById('teamScheduleContainer_' + userId);
+  if(!container) return;
+  container.innerHTML = renderTeamMemberSchedule(userId, view, today);
+
+  const dayBtn = document.getElementById('teamSchedDay_' + userId);
+  const weekBtn = document.getElementById('teamSchedWeek_' + userId);
+  if(dayBtn){
+    dayBtn.style.background = view === 'day' ? 'var(--cyan)' : '#333';
+    dayBtn.style.color = view === 'day' ? '#000' : '#aaa';
+  }
+  if(weekBtn){
+    weekBtn.style.background = view === 'week' ? 'var(--cyan)' : '#333';
+    weekBtn.style.color = view === 'week' ? '#000' : '#aaa';
+  }
+}
+
+function renderTeamMemberSchedule(userId, view, refDate){
+  const events = (S.events || []).filter(e => e.assignedTo === userId);
+  const bookings = (S.bookings || []).filter(b => b.assignedTo === userId);
+
+  let dates = [];
+  if(view === 'day'){
+    dates = [refDate];
+  } else {
+    // Week view: get Mon-Sun of current week
+    const d = new Date(refDate + 'T12:00:00');
+    const day = d.getDay();
+    const mon = new Date(d);
+    mon.setDate(d.getDate() - ((day + 6) % 7));
+    for(let i = 0; i < 7; i++){
+      const dd = new Date(mon);
+      dd.setDate(mon.getDate() + i);
+      dates.push(dd.toISOString().split('T')[0]);
+    }
+  }
+
+  let html = '';
+  dates.forEach(dateStr => {
+    const dayEvents = events.filter(e => e.date === dateStr).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+    const dayBookings = bookings.filter(b => b.date === dateStr).sort((a,b) => (a.time||'').localeCompare(b.time||''));
+
+    const dateObj = new Date(dateStr + 'T12:00:00');
+    const dayLabel = dateObj.toLocaleDateString('en-US', {weekday:'short', month:'short', day:'numeric'});
+    const isToday = dateStr === new Date().toISOString().split('T')[0];
+
+    if(dayEvents.length === 0 && dayBookings.length === 0 && view === 'day'){
+      html += '<div style="padding:16px;text-align:center;color:#555;font-size:12px">No scheduled items for today</div>';
+      return;
+    }
+    if(dayEvents.length === 0 && dayBookings.length === 0 && view === 'week') return;
+
+    html += '<div style="margin-bottom:8px">';
+    if(view === 'week'){
+      html += '<div style="font-size:11px;color:' + (isToday ? 'var(--cyan)' : '#666') + ';font-family:Oswald;letter-spacing:0.05em;margin-bottom:4px">' + esc(dayLabel) + (isToday ? ' (TODAY)' : '') + '</div>';
+    }
+
+    dayEvents.forEach(evt => {
+      const timeStr = evt.allDay ? 'All Day' : (evt.time || '');
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;background:#0d0d0d;border-left:3px solid var(--cyan);margin-bottom:4px">';
+      html += '<span style="font-size:11px;color:var(--cyan);min-width:50px">' + esc(timeStr) + '</span>';
+      html += '<span style="font-size:12px;color:#ccc;flex:1">' + esc(evt.title || 'Event') + '</span>';
+      html += '<span style="font-size:10px;color:#555">' + esc(evt.type || '') + '</span>';
+      html += '</div>';
+    });
+
+    dayBookings.forEach(bk => {
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;background:#0d0d0d;border-left:3px solid var(--green);margin-bottom:4px">';
+      html += '<span style="font-size:11px;color:var(--green);min-width:50px">' + esc(bk.time || '') + '</span>';
+      html += '<span style="font-size:12px;color:#ccc;flex:1">' + esc(bk.customer || 'Booking') + '</span>';
+      html += '<span style="font-size:10px;color:#555">' + esc(bk.status || '') + '</span>';
+      html += '</div>';
+    });
+
+    html += '</div>';
+  });
+
+  if(!html) html = '<div style="padding:16px;text-align:center;color:#555;font-size:12px">No scheduled items this week</div>';
+  return html;
+}
+
+function filterTeamTasks(userId, filter){
+  const tasks = (S.tasks || []).filter(t => t.assignedTo === userId);
+  const container = document.getElementById('teamTasksContainer_' + userId);
+  if(!container) return;
+  container.innerHTML = renderTeamMemberTasks(tasks, filter);
+
+  // Update button styles
+  ['all','todo','done'].forEach(f => {
+    const btn = document.getElementById('teamTask' + f.charAt(0).toUpperCase() + f.slice(1) + '_' + userId);
+    if(btn){
+      btn.style.background = f === filter ? 'var(--purple)' : '#333';
+      btn.style.color = f === filter ? '#000' : '#aaa';
+    }
+  });
+}
+
+function renderTeamMemberTasks(tasks, filter){
+  let filtered = tasks;
+  if(filter === 'todo') filtered = tasks.filter(t => !t.done);
+  if(filter === 'done') filtered = tasks.filter(t => t.done);
+
+  if(filtered.length === 0){
+    return '<div style="padding:12px;text-align:center;color:#555;font-size:12px">No ' + (filter === 'all' ? '' : filter + ' ') + 'tasks</div>';
+  }
+
+  const priorityColors = { low:'var(--gray-light)', normal:'var(--purple)', high:'var(--amber)', urgent:'var(--red)' };
+  let html = '';
+  filtered.forEach(t => {
+    const prColor = priorityColors[t.priority] || 'var(--purple)';
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:6px;background:#0d0d0d;border-left:3px solid ' + prColor + ';margin-bottom:4px;cursor:pointer" onclick="document.getElementById(\'teamMemberDetailModal\')?.remove();openTaskModal(\'' + esc(t.id) + '\')">';
+    html += '<div style="width:14px;height:14px;border-radius:50%;border:2px solid ' + prColor + ';flex-shrink:0;' + (t.done ? 'background:' + prColor : '') + '"></div>';
+    html += '<div style="flex:1">';
+    html += '<div style="font-size:12px;color:' + (t.done ? '#555' : '#ccc') + ';' + (t.done ? 'text-decoration:line-through' : '') + '">' + esc(t.title || 'Task') + '</div>';
+    if(t.due) html += '<div style="font-size:10px;color:#555">' + esc(t.due) + '</div>';
+    html += '</div>';
+    html += '<span style="font-size:10px;color:#555">' + esc(t.priority || '') + '</span>';
+    html += '</div>';
+  });
+  return html;
+}
+
+function renderTeamMemberProspects(prospects){
+  if(prospects.length === 0){
+    return '<div style="padding:12px;text-align:center;color:#555;font-size:12px">No assigned prospects</div>';
+  }
+
+  const statusColors = { lead:'var(--gray-light)', contacted:'var(--cyan)', sample:'var(--amber)', negotiating:'var(--purple)', closed:'var(--green)', dead:'var(--red)' };
+  let html = '';
+  prospects.forEach(p => {
+    const sColor = statusColors[p.status] || 'var(--amber)';
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:6px;background:#0d0d0d;border-left:3px solid ' + sColor + ';margin-bottom:4px;cursor:pointer" onclick="document.getElementById(\'teamMemberDetailModal\')?.remove();openProspectModal(\'' + esc(p.id) + '\')">';
+    html += '<div style="width:8px;height:8px;border-radius:50%;background:' + sColor + ';flex-shrink:0"></div>';
+    html += '<div style="flex:1">';
+    html += '<div style="font-size:12px;color:#ccc">' + esc(p.biz || 'Untitled') + '</div>';
+    if(p.con) html += '<div style="font-size:10px;color:#555">' + esc(p.con) + '</div>';
+    html += '</div>';
+    html += '<span style="font-size:10px;color:' + sColor + '">' + esc(p.status || 'lead') + '</span>';
+    html += '</div>';
+  });
+  return html;
+}
+
+function renderTeamMemberJobs(jobs){
+  if(jobs.length === 0){
+    return '<div style="padding:12px;text-align:center;color:#555;font-size:12px">No assigned jobs</div>';
+  }
+
+  const statusColors = { pending:'var(--amber)', active:'var(--cyan)', complete:'var(--green)', cancelled:'var(--red)' };
+  let html = '';
+  jobs.forEach(j => {
+    const sColor = statusColors[j.status] || 'var(--amber)';
+    html += '<div style="display:flex;align-items:center;gap:8px;padding:8px;border-radius:6px;background:#0d0d0d;border-left:3px solid ' + sColor + ';margin-bottom:4px;cursor:pointer" onclick="document.getElementById(\'teamMemberDetailModal\')?.remove();openJobModal(\'' + esc(j.id) + '\')">';
+    html += '<div style="flex:1">';
+    html += '<div style="font-size:12px;color:#ccc">' + esc(j.title || 'Job') + '</div>';
+    html += '</div>';
+    html += '<span style="font-size:10px;color:' + sColor + '">' + esc(j.status || 'pending') + '</span>';
+    html += '</div>';
+  });
+  return html;
 }
 </script>
 
