@@ -12744,6 +12744,9 @@ function renderCloudSettings(){
         Team Workspace
       </button>
 
+      <button class="share-gen-btn" style="background:var(--amber);box-shadow:0 0 15px var(--amber-glow)" onclick="generateLinkCode()">
+        Link Another Device
+      </button>
       <button class="share-gen-btn" style="background:#374151" onclick="if(confirm('Sign out? Your local data will be kept.')){helixSignOut();this.closest('.share-avail-modal').remove()}">
         Sign Out
       </button>`;
@@ -12799,6 +12802,19 @@ function renderCloudSettings(){
           Sign in with Google
         </button>
         <p style="font-size:10px;color:#555;margin:0">Opens Google sign-in in a new tab</p>
+      </div>
+
+      <!-- Device Link Code -->
+      <div style="border-top:1px solid #333;margin-top:4px;padding-top:12px;text-align:center">
+        <button style="background:none;border:none;color:var(--amber);font-size:12px;cursor:pointer;text-decoration:underline;padding:4px" onclick="document.getElementById('deviceLinkSection').style.display=document.getElementById('deviceLinkSection').style.display==='none'?'flex':'none'">
+          Have a device link code?
+        </button>
+        <div id="deviceLinkSection" style="display:none;flex-direction:column;gap:8px;margin-top:8px;align-items:center">
+          <input type="text" id="deviceLinkInput" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="000000" style="width:180px;padding:12px;border-radius:8px;background:#1a1a1a;border:1px solid var(--amber);color:var(--amber);font-size:28px;font-family:JetBrains Mono,monospace;text-align:center;letter-spacing:8px;outline:none">
+          <button class="share-gen-btn" style="background:var(--amber);box-shadow:0 0 15px var(--amber-glow);width:180px" onclick="redeemLinkCode(document.getElementById('deviceLinkInput').value)">
+            Link Device
+          </button>
+        </div>
       </div>`;
   }
 
@@ -12989,6 +13005,84 @@ async function helixForgotPassword(email){
     return true;
   } catch(e){
     toast('Reset failed: ' + e.message);
+    return false;
+  }
+}
+
+// --- Device Link Code ---
+async function generateLinkCode(){
+  const sb = getSupabase();
+  if(!sb){ toast('Cloud sync not available'); return; }
+  const user = await helixGetUser();
+  if(!user){ toast('You must be signed in to generate a link code'); return; }
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if(!session?.refresh_token){ toast('No active session'); return; }
+
+    const code = String(Math.floor(100000 + Math.random() * 900000));
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+
+    const { error } = await sb.from('device_links').insert({
+      code,
+      user_id: user.id,
+      session_token: session.refresh_token,
+      expires_at: expiresAt
+    });
+    if(error) throw error;
+
+    // Show code in a modal
+    const m = document.createElement('div');
+    m.className = 'share-avail-modal';
+    m.innerHTML = `
+      <div class="share-avail-content" style="max-width:360px">
+        <div class="share-avail-header">
+          <h3>DEVICE LINK CODE</h3>
+          <button class="share-avail-close" onclick="this.closest('.share-avail-modal').remove()">✕</button>
+        </div>
+        <div style="padding:24px;text-align:center">
+          <div style="font-size:48px;font-family:JetBrains Mono,monospace;color:var(--amber);letter-spacing:12px;text-shadow:0 0 20px var(--amber-glow);margin:16px 0">${esc(code)}</div>
+          <p style="font-size:12px;color:#888;margin:8px 0 0">Enter this code on your other device.<br>Expires in 5 minutes.</p>
+        </div>
+      </div>`;
+    document.body.appendChild(m);
+    return code;
+  } catch(e){
+    toast('Failed to generate link code: ' + e.message);
+    return null;
+  }
+}
+
+async function redeemLinkCode(code){
+  const sb = getSupabase();
+  if(!sb){ toast('Cloud sync not available'); return; }
+  if(!code || code.length !== 6){ toast('Enter a valid 6-digit code'); return; }
+
+  try {
+    const { data, error } = await sb.from('device_links')
+      .select('*')
+      .eq('code', code)
+      .eq('used', false)
+      .gt('expires_at', new Date().toISOString())
+      .maybeSingle();
+    if(error) throw error;
+    if(!data){ toast('Invalid or expired code'); return; }
+
+    const { data: sessionData, error: authErr } = await sb.auth.setSession({
+      refresh_token: data.session_token,
+      access_token: '' // will be refreshed from the refresh_token
+    });
+    if(authErr) throw authErr;
+
+    // Mark code as used
+    await sb.from('device_links').update({ used: true }).eq('id', data.id);
+
+    toast('Device linked!');
+    document.getElementById('cloudSyncModal')?.remove();
+    sync();
+    return true;
+  } catch(e){
+    toast('Link failed: ' + e.message);
     return false;
   }
 }
