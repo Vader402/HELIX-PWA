@@ -13068,18 +13068,23 @@ async function redeemLinkCode(code){
     if(error) throw error;
     if(!data){ toast('Invalid or expired code'); return; }
 
-    const { data: sessionData, error: authErr } = await sb.auth.setSession({
-      refresh_token: data.session_token,
-      access_token: '' // will be refreshed from the refresh_token
+    // Use refresh token to establish session on this device
+    const { data: refreshData, error: refreshErr } = await sb.auth.refreshSession({
+      refresh_token: data.session_token
     });
-    if(authErr) throw authErr;
+    if(refreshErr) throw refreshErr;
+    if(!refreshData?.session) throw new Error('Failed to establish session');
 
     // Mark code as used
     await sb.from('device_links').update({ used: true }).eq('id', data.id);
 
-    toast('Device linked!');
-    document.getElementById('cloudSyncModal')?.remove();
-    sync();
+    // Store session and trigger sync
+    localStorage.setItem('helix_session', JSON.stringify(refreshData.session));
+    updateSyncIndicator();
+    toast('✓ Device linked! Syncing...');
+    document.querySelector('.share-avail-modal')?.remove();
+    startPeriodicSync();
+    setTimeout(() => sync(), 500);
     return true;
   } catch(e){
     toast('Link failed: ' + e.message);
