@@ -31036,12 +31036,6 @@ function startQueueCardDrag(card, type, e){
       floatEl.style.opacity = '0';
     }
     document.body.classList.remove('crossroads-active');
-    // Restore HUD layers in case crossroads was active
-    const _L1 = document.getElementById('L1');
-    const _L2 = document.getElementById('L2');
-    if(_L1) _L1.classList.remove('crossroads-layer');
-    if(_L2) _L2.classList.remove('crossroads-layer');
-    if(typeof switchLayer === 'function' && typeof layer !== 'undefined') switchLayer(layer);
     clearHudHighlights();
 
     // Restore modal
@@ -37538,12 +37532,6 @@ function saveQuestProgress(id){
     els.floatEl.classList.add('visible');
     document.body.classList.add('crossroads-active');
 
-    // Show both HUD layers as drop targets
-    const L1 = document.getElementById('L1');
-    const L2 = document.getElementById('L2');
-    if(L1){ L1.classList.add('crossroads-layer'); L1.classList.remove('hide'); }
-    if(L2){ L2.classList.add('crossroads-layer'); L2.classList.remove('hide'); }
-
     if(navigator.vibrate) navigator.vibrate(15);
   }
   
@@ -37744,7 +37732,6 @@ function saveQuestProgress(id){
         els.floatEl.style.transform = 'translate(-50%, -50%)';
         els.floatEl.style.opacity = '';
         document.body.classList.remove('crossroads-active');
-        restoreLayers();
 
         Object.keys(btnMap).forEach(id => {
           const btn = document.getElementById(id);
@@ -37799,15 +37786,6 @@ function saveQuestProgress(id){
     if(navigator.vibrate) navigator.vibrate(10);
   }
   
-  function restoreLayers(){
-    const L1 = document.getElementById('L1');
-    const L2 = document.getElementById('L2');
-    if(L1) L1.classList.remove('crossroads-layer');
-    if(L2) L2.classList.remove('crossroads-layer');
-    // Restore correct layer visibility
-    if(typeof switchLayer === 'function') switchLayer(layer);
-  }
-
   function cancelCrossroads(){
     const els = getElements();
     isDragging = false;
@@ -37823,9 +37801,6 @@ function saveQuestProgress(id){
     els.floatEl.style.opacity = '';  // Reset inline opacity
     document.body.classList.remove('crossroads-active');
     els.actionEl.className = 'crossroads-action';
-
-    // Restore HUD layers
-    restoreLayers();
 
     Object.keys(btnMap).forEach(id => {
       const btn = document.getElementById(id);
