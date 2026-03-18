@@ -12908,6 +12908,10 @@ function initSupabase(){
         localStorage.removeItem('helix_session');
         stopPeriodicSync();
         updateSyncIndicator();
+      } else if(event === 'PASSWORD_RECOVERY' && session){
+        // User clicked password reset link — show new password form
+        localStorage.setItem('helix_session', JSON.stringify(session));
+        setTimeout(() => showPasswordResetModal(), 300);
       } else if(event === 'TOKEN_REFRESHED' && session){
         localStorage.setItem('helix_session', JSON.stringify(session));
       }
@@ -13006,6 +13010,52 @@ async function helixForgotPassword(email){
   } catch(e){
     toast('Reset failed: ' + e.message);
     return false;
+  }
+}
+
+function showPasswordResetModal(){
+  const m = document.createElement('div');
+  m.className = 'share-avail-modal';
+  m.id = 'passwordResetModal';
+  m.innerHTML = `
+    <div class="share-avail-content" style="max-width:360px">
+      <div class="share-avail-header">
+        <h3>SET NEW PASSWORD</h3>
+        <button class="share-avail-close" onclick="this.closest('.share-avail-modal').remove()">&#10005;</button>
+      </div>
+      <div style="padding:20px;display:flex;flex-direction:column;gap:12px">
+        <p style="font-size:12px;color:#888;margin:0">Enter your new password below.</p>
+        <input type="password" id="newPasswordInput" placeholder="New password (6+ characters)" style="padding:12px;border-radius:8px;background:#1a1a1a;border:1px solid var(--amber);color:#ccc;font-size:14px;outline:none" minlength="6">
+        <input type="password" id="confirmPasswordInput" placeholder="Confirm password" style="padding:12px;border-radius:8px;background:#1a1a1a;border:1px solid #333;color:#ccc;font-size:14px;outline:none" minlength="6">
+        <button class="share-gen-btn" style="background:var(--amber);box-shadow:0 0 15px var(--amber-glow)" onclick="submitNewPassword()">
+          Update Password
+        </button>
+      </div>
+    </div>`;
+  document.body.appendChild(m);
+  setTimeout(() => document.getElementById('newPasswordInput')?.focus(), 200);
+}
+
+async function submitNewPassword(){
+  const pw = document.getElementById('newPasswordInput')?.value || '';
+  const confirm = document.getElementById('confirmPasswordInput')?.value || '';
+
+  if(pw.length < 6){ toast('Password must be 6+ characters'); return; }
+  if(pw !== confirm){ toast('Passwords do not match'); return; }
+
+  const sb = getSupabase();
+  if(!sb){ toast('Cloud sync not available'); return; }
+
+  try {
+    const { error } = await sb.auth.updateUser({ password: pw });
+    if(error) throw error;
+    toast('Password updated!');
+    document.getElementById('passwordResetModal')?.remove();
+    // Clean up URL hash from reset token
+    if(window.location.hash) history.replaceState(null, '', window.location.pathname);
+    updateSyncIndicator();
+  } catch(e){
+    toast('Update failed: ' + e.message);
   }
 }
 
