@@ -30371,7 +30371,8 @@ const VAULT_CONTEXT_MAP = {
   budget: [
     {id:'overview', label:'ENV', icon:'<svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>'},
     {id:'goals', label:'GOAL', icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>'},
-    {id:'bills', label:'BILL', icon:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>'}
+    {id:'bills', label:'BILL', icon:'<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg>'},
+    {id:'pacing', label:'PACE', icon:'<svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>'}
   ],
   balance: [
     {id:'overview', label:'STD', icon:'<svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg>'},
@@ -33215,6 +33216,69 @@ function renderVaultBalance(container){
   renderVaultContextBar();
 }
 
+// ── "IN MY POCKET" — Safe-to-Spend Calculation ──
+function calcSafeToSpend(){
+  const cash = (S.bankAccounts||[]).reduce((s,a) => s + (a.balance||0), 0);
+  const bs = S.balanceSheet||{assets:{current:[]}};
+  const bsCash = (bs.assets?.current||[]).find(a=>a.name==='Cash')?.amount || 0;
+  const currentCash = cash || bsCash;
+
+  // Upcoming bills remaining this month
+  const now = new Date();
+  const budget = (S.budgets||[])[0];
+  let upcomingBills = 0;
+  if(budget)(budget.bills||[]).forEach(b => {
+    if(!b.paidThisMonth && b.dueDay > now.getDate()) upcomingBills += (b.amount||0);
+  });
+
+  // Envelope commitments (budgeted but unspent)
+  let envelopeCommitted = 0;
+  if(budget)(budget.envelopes||[]).forEach(e => {
+    const left = Math.max(0, (e.budgeted||0) - (e.spent||0));
+    envelopeCommitted += left;
+  });
+
+  // Tax reserve
+  const taxRate = (S.financialSettings||{}).taxRate || 0;
+  const monthRevenue = (S.invoices||[]).filter(i => {
+    if(i.status!=='paid' || !i.paidAt) return false;
+    const d = new Date(i.paidAt);
+    return d.getMonth()===now.getMonth() && d.getFullYear()===now.getFullYear();
+  }).reduce((s,i) => s+(i.total||0), 0);
+  const taxReserve = monthRevenue * (taxRate/100);
+
+  // Savings goal contributions this month
+  let savingsCommit = 0;
+  if(budget)(budget.savingsGoals||[]).forEach(g => {
+    if(g.monthlyContribution) savingsCommit += g.monthlyContribution;
+  });
+
+  // Minimum buffer (user-configurable, default $200)
+  const minBuffer = (S.financialSettings||{}).safetyBuffer || 200;
+
+  // Next pay date
+  const paySchedule = budget?.paySchedule || 'monthly';
+  let nextPayLabel = 'end of month';
+  const daysLeft = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate() - now.getDate();
+  if(paySchedule === 'biweekly') nextPayLabel = Math.min(14, daysLeft) + ' days';
+  else if(paySchedule === 'semi-monthly') nextPayLabel = (now.getDate() < 15 ? (15 - now.getDate()) : daysLeft) + ' days';
+  else nextPayLabel = daysLeft + ' days';
+
+  const safeToSpend = Math.max(0, currentCash - upcomingBills - taxReserve - savingsCommit - minBuffer);
+
+  return {
+    safeToSpend,
+    currentCash,
+    upcomingBills,
+    envelopeCommitted,
+    taxReserve,
+    savingsCommit,
+    minBuffer,
+    nextPayLabel,
+    daysLeft
+  };
+}
+
 function renderVaultBudget(container){
   syncBudgetEnvelopes();
   S.budgets = S.budgets || [];
@@ -33244,20 +33308,46 @@ function renderVaultBudget(container){
   const budgetAlt = window._budgetAltView || false;
 
   if(view === 'overview'){
-  // ── ENVELOPES: Hero budget summary + envelope cards ──
+  // ── ENVELOPES + IN MY POCKET ──
   const envBars = (budget.envelopes||[]).map(e => ({label:(e.name||'').substring(0,6), value:e.spent||0, color: (e.spent||0)>(e.budgeted||0) ? '#EF4444' : (e.spent||0)>(e.budgeted||0)*0.7 ? '#F59E0B' : '#22C55E'}));
+  const pocket = calcSafeToSpend();
+  const pocketColor = pocket.safeToSpend > 500 ? 'positive' : pocket.safeToSpend > 100 ? 'gold' : 'negative';
+  const pocketHex = pocket.safeToSpend > 500 ? '#22C55E' : pocket.safeToSpend > 100 ? '#F59E0B' : '#EF4444';
 
   content = `
-    <div class="dash-hero" onclick="window._budgetAltView=!window._budgetAltView;renderVaultModule()" style="cursor:pointer">
-      <div class="dash-hero-label">Budget — ${(budget.period||'monthly').toUpperCase()} <span style="font-size:8px;opacity:0.4;margin-left:6px">tap to ${budgetAlt?'collapse':'expand'}</span></div>
-      <div class="dash-hero-value hero-3d ${remaining>=0?'positive':'negative'} helix-count-glow" style="font-size:42px" data-animate-value="${Math.abs(remaining)}" data-animate-prefix="${remaining>=0?'$':'-$'}">${remaining>=0?'':'−'}${fmt$(Math.abs(remaining))}</div>
-      <div class="dash-hero-trend ${remaining>=0?'up':'down'}">remaining of ${fmt$(totalBudgeted)} budgeted</div>
+    <!-- IN MY POCKET — Safe to Spend Hero -->
+    <div class="dash-hero" onclick="showDrillPane(buildPocketDrill())" style="cursor:pointer">
+      <div class="dash-hero-label">IN MY POCKET <span style="font-size:8px;opacity:0.4;margin-left:6px">safe to spend · ${pocket.nextPayLabel} until next pay</span></div>
+      <div class="dash-hero-value hero-3d ${pocketColor} helix-count-glow" style="font-size:48px">${fmt$(pocket.safeToSpend)}</div>
+      <div class="dash-hero-trend">${pocket.daysLeft > 0 ? fmt$(Math.round(pocket.safeToSpend / pocket.daysLeft)) + '/day' : ''} · tap for breakdown</div>
+      <div style="margin-top:14px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06)">
+        ${renderIsometricBars([
+          {label:'Cash', value:Math.max(1,pocket.currentCash), color:'#22C55E'},
+          {label:'Bills', value:Math.max(1,pocket.upcomingBills), color:'#EF4444'},
+          {label:'Tax', value:Math.max(1,pocket.taxReserve), color:'#F59E0B'},
+          {label:'Safe', value:Math.max(1,pocket.safeToSpend), color:pocketHex}
+        ], 70)}
+      </div>
+    </div>
+
+    <!-- Budget remaining strip -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div class="drill-card" style="flex-direction:column;align-items:center;padding:12px" onclick="window._budgetAltView=!window._budgetAltView;renderVaultModule()">
+        <div class="drill-label" style="font-size:8px">BUDGET ${remaining>=0?'LEFT':'OVER'}</div>
+        <div class="drill-value" style="color:${remaining>=0?'var(--green)':'var(--red)'};font-size:18px">${remaining>=0?'':'−'}${fmt$(Math.abs(remaining))}</div>
+        <div style="font-size:8px;color:var(--gray-light);margin-top:2px">of ${fmt$(totalBudgeted)} · ${budgetAlt?'collapse':'expand'} ›</div>
+      </div>
+      <div class="drill-card" style="flex-direction:column;align-items:center;padding:12px" onclick="window.vault_budget_view='pacing';renderVaultModule()">
+        <div class="drill-label" style="font-size:8px">DAILY ALLOWANCE</div>
+        <div class="drill-value" style="color:var(--cyan);font-size:18px">${pocket.daysLeft>0?fmt$(Math.round(pocket.safeToSpend/pocket.daysLeft)):'—'}</div>
+        <div style="font-size:8px;color:var(--gray-light);margin-top:2px">pacing view ›</div>
+      </div>
     </div>
 
     ${budgetAlt && envBars.length > 0 ? `
       <div class="glass-card" style="padding:20px;margin-bottom:20px">
         <div style="font-size:10px;color:var(--cyan);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Spending by Envelope</div>
-        ${renderBreathingBars(envBars, 130)}
+        ${renderIsometricBars(envBars, 110)}
       </div>
     ` : ''}
 
@@ -33401,6 +33491,78 @@ function renderVaultBudget(container){
     }).join('');
   }
 
+  } else if(view === 'pacing'){
+    // ── PACING: Cash flow waterfall from payday to payday ──
+    const pocket = calcSafeToSpend();
+    const now = new Date();
+    const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    const today = now.getDate();
+
+    // Build daily cash position timeline
+    let runningCash = pocket.currentCash;
+    const timeline = [];
+    const billsList = (budget.bills||[]).slice().sort((a,b) => (a.dueDay||1)-(b.dueDay||1));
+    const dailySpend = pocket.daysLeft > 0 ? pocket.safeToSpend / pocket.daysLeft : 0;
+
+    for(let d = today; d <= daysInMonth; d++){
+      const dayBills = billsList.filter(b => b.dueDay === d && !b.paidThisMonth);
+      const billTotal = dayBills.reduce((s,b) => s+(b.amount||0), 0);
+      runningCash -= billTotal;
+      timeline.push({day:d, cash:Math.max(0,runningCash), bills:dayBills, billTotal, isToday:d===today});
+      runningCash -= dailySpend;
+    }
+    const maxCash = Math.max(...timeline.map(t => t.cash), 1);
+
+    content = `
+      <div class="dash-hero">
+        <div class="dash-hero-label">CASH PACING <span style="font-size:8px;opacity:0.4;margin-left:6px">payday to payday</span></div>
+        <div class="dash-hero-value hero-3d ${pocket.safeToSpend>500?'positive':pocket.safeToSpend>100?'gold':'negative'} helix-count-glow" style="font-size:42px">${fmt$(pocket.safeToSpend)}</div>
+        <div class="dash-hero-trend">${fmt$(Math.round(dailySpend))}/day for ${pocket.daysLeft} days</div>
+      </div>
+
+      <div class="glass-card" style="padding:16px;margin-bottom:16px">
+        <div style="font-family:Oswald,sans-serif;font-size:10px;color:var(--cyan);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Daily Cash Position</div>
+        <div style="display:flex;align-items:flex-end;gap:2px;height:100px">
+          ${timeline.map(t => {
+            const h = Math.max(2, (t.cash/maxCash)*100);
+            const color = t.cash > pocket.minBuffer ? (t.billTotal > 0 ? '#F59E0B' : '#22C55E') : '#EF4444';
+            return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end" title="Day ${t.day}: ${fmt$(t.cash)}">
+              <div style="width:100%;height:${h}%;background:linear-gradient(180deg,${color},${color}80);border-radius:2px 2px 0 0;box-shadow:0 0 4px ${color}40;min-height:2px;position:relative">
+                ${t.billTotal > 0 ? '<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:4px;height:4px;background:var(--red);border-radius:50%"></div>' : ''}
+              </div>
+              ${t.isToday ? '<div style="width:4px;height:4px;background:var(--amber);border-radius:50%;margin-top:2px"></div>' : ''}
+            </div>`;
+          }).join('')}
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:8px;color:var(--gray-light);margin-top:6px">
+          <span>Day ${today}</span>
+          <span style="color:var(--red);font-size:7px">● bill due</span>
+          <span>Day ${daysInMonth}</span>
+        </div>
+      </div>
+
+      <div class="dash-section">Bills Remaining</div>
+      ${billsList.filter(b => b.dueDay >= today && !b.paidThisMonth).map(b => {
+        const daysUntil = b.dueDay - today;
+        const urgency = daysUntil <= 2 ? 'red' : daysUntil <= 7 ? 'amber' : 'green';
+        return `<div class="drill-card" style="border-left:3px solid var(--${urgency});padding:10px 12px" onclick="openBillEditor('${b.id}')">
+          <div style="flex:1">
+            <div class="drill-label">${esc(b.name||'Bill')}</div>
+            <div style="font-size:9px;color:var(--${urgency})">${daysUntil===0?'DUE TODAY':daysUntil===1?'Tomorrow':'In '+daysUntil+' days'} · Day ${b.dueDay}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="drill-value" style="color:var(--red)">${fmt$(b.amount||0)}</div>
+            <span style="color:var(--amber);font-size:10px">›</span>
+          </div>
+        </div>`;
+      }).join('') || '<div style="color:var(--gray-light);font-size:11px;padding:8px;text-align:center">No bills remaining</div>'}
+
+      <div class="glass-card" style="padding:16px;margin-top:16px;text-align:center">
+        <div style="font-family:Oswald,sans-serif;font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px">DAILY ALLOWANCE</div>
+        <div class="hero-3d ${pocket.safeToSpend>500?'positive':'gold'}" style="font-size:36px">${pocket.daysLeft>0?fmt$(Math.round(dailySpend)):'—'}</div>
+        <div style="font-size:10px;color:var(--gray-light);margin-top:4px">Spend this each day → finish with ${fmt$(pocket.minBuffer)} buffer</div>
+      </div>
+    `;
   }
 
   container.innerHTML = content;
@@ -33787,6 +33949,36 @@ function applyBudgetTemplate(templateKey){
 // ============================================
 // BUD-7: PROJECTED END-OF-MONTH BALANCE
 // ============================================
+// ── "IN MY POCKET" Drill Pane Builder ──
+function buildPocketDrill(){
+  const p = calcSafeToSpend();
+  const pocketColor = p.safeToSpend > 500 ? 'var(--green)' : p.safeToSpend > 100 ? 'var(--amber)' : 'var(--red)';
+  return '<div class="dash-hero"><div class="dash-hero-label">IN MY POCKET</div>' +
+    '<div class="hero-3d '+(p.safeToSpend>500?'positive':p.safeToSpend>100?'gold':'negative')+'" style="font-size:42px">'+fmt$(p.safeToSpend)+'</div>' +
+    '<div class="dash-hero-trend">safe to spend · '+p.nextPayLabel+' until next pay</div></div>' +
+    '<div style="display:grid;gap:8px;margin:16px 0">' +
+    '<div class="drill-card" style="padding:10px 12px;cursor:pointer" onclick="closeDrillPane();vaultActiveModule=\'banking\';renderVaultModule();renderVaultModuleBar()">' +
+      '<div class="drill-label">Current Cash</div>' +
+      '<div style="display:flex;align-items:center;gap:6px"><div class="drill-value" style="color:var(--green)">'+fmt$(p.currentCash)+'</div><span style="color:var(--amber);font-size:10px">›</span></div></div>' +
+    '<div class="drill-card" style="padding:10px 12px;cursor:pointer" onclick="closeDrillPane();window.vault_budget_view=\'bills\';selectVaultModule(\'budget\')">' +
+      '<div class="drill-label">Upcoming Bills</div>' +
+      '<div style="display:flex;align-items:center;gap:6px"><div class="drill-value" style="color:var(--red)">−'+fmt$(p.upcomingBills)+'</div><span style="color:var(--amber);font-size:10px">›</span></div></div>' +
+    '<div class="drill-card" style="padding:10px 12px">' +
+      '<div class="drill-label">Tax Reserve ('+((S.financialSettings||{}).taxRate||0)+'%)</div>' +
+      '<div class="drill-value" style="color:var(--amber)">−'+fmt$(p.taxReserve)+'</div></div>' +
+    '<div class="drill-card" style="padding:10px 12px;cursor:pointer" onclick="closeDrillPane();window.vault_budget_view=\'goals\';selectVaultModule(\'budget\')">' +
+      '<div class="drill-label">Savings Goals</div>' +
+      '<div style="display:flex;align-items:center;gap:6px"><div class="drill-value" style="color:var(--purple)">−'+fmt$(p.savingsCommit)+'</div><span style="color:var(--amber);font-size:10px">›</span></div></div>' +
+    '<div class="drill-card" style="padding:10px 12px;cursor:pointer" onclick="(function(){var v=prompt(\'Safety Buffer ($):\','+p.minBuffer+');if(v!==null){S.financialSettings=S.financialSettings||{};S.financialSettings.safetyBuffer=parseFloat(v)||200;save();closeDrillPane();renderVaultModule();toast(\'Buffer updated\');}})()">' +
+      '<div class="drill-label">Safety Buffer</div>' +
+      '<div style="display:flex;align-items:center;gap:6px"><div class="drill-value" style="color:var(--gray-light)">−'+fmt$(p.minBuffer)+'</div><span style="font-size:8px;color:var(--gray-light)">tap to change</span></div></div>' +
+    '</div>' +
+    '<div style="margin-top:12px;padding:12px;border-top:1px solid var(--gray-faint);text-align:center">' +
+    '<div style="font-size:10px;color:var(--gray-light);margin-bottom:4px">DAILY ALLOWANCE</div>' +
+    '<div style="font-family:JetBrains Mono;font-size:24px;color:'+pocketColor+'">'+(p.daysLeft>0?fmt$(Math.round(p.safeToSpend/p.daysLeft)):'—')+'/day</div>' +
+    '<div style="font-size:9px;color:var(--gray-light);margin-top:2px">for '+p.daysLeft+' remaining days</div></div>';
+}
+
 function getProjectedEndOfMonth(){
   var now = new Date();
   var daysLeft = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate() - now.getDate();
