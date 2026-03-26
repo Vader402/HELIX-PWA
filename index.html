@@ -33309,7 +33309,8 @@ function renderVaultBudget(container){
 
   if(view === 'overview'){
   // ── ENVELOPES + IN MY POCKET ──
-  const envBars = (budget.envelopes||[]).map(e => ({label:(e.name||'').substring(0,6), value:e.spent||0, color: (e.spent||0)>(e.budgeted||0) ? '#EF4444' : (e.spent||0)>(e.budgeted||0)*0.7 ? '#F59E0B' : '#22C55E'}));
+  const _hexRed='#EF4444',_hexAmber='#F59E0B',_hexGreen='#22C55E',_hexCyan='#06B6D4';
+  const envBars = (budget.envelopes||[]).map(e => ({label:(e.name||'').substring(0,6), value:e.spent||0, color: (e.spent||0)>(e.budgeted||0) ? _hexRed : (e.spent||0)>(e.budgeted||0)*0.7 ? _hexAmber : _hexGreen}));
   const pocket = calcSafeToSpend();
   const pocketColor = pocket.safeToSpend > 500 ? 'positive' : pocket.safeToSpend > 100 ? 'gold' : 'negative';
   const pocketHex = pocket.safeToSpend > 500 ? '#22C55E' : pocket.safeToSpend > 100 ? '#F59E0B' : '#EF4444';
@@ -33383,8 +33384,8 @@ function renderVaultBudget(container){
         <div style="display:flex;justify-content:space-between;font-size:9px;color:var(--gray-light);margin-top:4px">
           <span>${fmt$(env.spent||0)} spent</span>
           <span>${fmt$(env.budgeted||0)} budgeted</span>
-          <button onclick="event.stopPropagation();inlineEditEnvelopeBudget('${env.id}')" style="background:none;border:1px solid var(--gray-faint);border-radius:4px;padding:1px 6px;color:var(--white);font-size:8px;cursor:pointer" title="Edit budget">✎</button>
-          <button onclick="event.stopPropagation();moveMoneyBetweenEnvelopes('${env.id}')" style="background:none;border:1px solid var(--cyan-dim);border-radius:4px;padding:1px 6px;color:var(--cyan);font-size:8px;cursor:pointer">Move $</button>
+          <button onclick="event.stopPropagation();inlineEditEnvelopeBudget('${env.id}')" class="v3-action-btn" style="--accent:var(--white)" title="Edit budget">✎</button>
+          <button onclick="event.stopPropagation();moveMoneyBetweenEnvelopes('${env.id}')" class="v3-action-btn" style="--accent:var(--cyan);color:var(--cyan);border-color:var(--cyan-dim)">Move $</button>
         </div>
       </div>`;
     }).join('')}
@@ -33403,6 +33404,25 @@ function renderVaultBudget(container){
         '<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px;cursor:pointer" onclick="showDrillPane(\'<div class=dash-hero><div class=dash-hero-label>Projected End of Month</div><div class=hero-3d ' + (proj.projected>=0?'positive':'negative') + ' style=font-size:36px>' + (proj.projected>=0?'':'−') + fmt$(Math.abs(proj.projected)) + '</div><div class=dash-hero-trend>' + proj.daysLeft + ' days remaining</div></div><div style=display:grid;grid-template-columns:1fr_1fr;gap:10px;margin:16px_0><div class=drill-card style=flex-direction:column;align-items:center;padding:12px onclick=closeDrillPane();vaultActiveModule=\\'banking\\';renderVaultModule();renderVaultModuleBar()><div class=drill-label style=font-size:8px>CASH NOW</div><div class=drill-value style=color:var(--green);font-size:14px>' + fmt$(proj.currentCash) + '</div><div style=font-size:8px;color:var(--gray-light)>banking ›</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:12px onclick=closeDrillPane();openPanel(\\'invoices\\')><div class=drill-label style=font-size:8px>EXPECTED IN</div><div class=drill-value style=color:var(--cyan);font-size:14px>+' + fmt$(proj.expectedIncome) + '</div><div style=font-size:8px;color:var(--gray-light)>invoices ›</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:12px onclick=closeDrillPane();window.vault_budget_view=\\'bills\\';selectVaultModule(\\'budget\\')><div class=drill-label style=font-size:8px>BILLS DUE</div><div class=drill-value style=color:var(--red);font-size:14px>−' + fmt$(proj.upcomingBills) + '</div><div style=font-size:8px;color:var(--gray-light)>bills ›</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:12px onclick=closeDrillPane();openPanel(\\'expenses\\')><div class=drill-label style=font-size:8px>RECURRING</div><div class=drill-value style=color:var(--amber);font-size:14px>−' + fmt$(Math.round(proj.recurringExpenses)) + '</div><div style=font-size:8px;color:var(--gray-light)>expenses ›</div></div></div>\')"><div class="drill-label">Projected EOM</div><div class="drill-value" style="color:' + (proj.projected>=0?'var(--green)':'var(--red)') + '">' + fmt$(Math.abs(proj.projected)) + '</div><div style="font-size:8px;color:var(--gray-light)">' + proj.daysLeft + ' days left ›</div></div>' +
         '<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px;cursor:pointer" onclick="showDrillPane(\'<div class=dash-hero><div class=dash-hero-label>Cost to Run</div><div class=hero-3d gold style=font-size:36px>' + fmt$(cost.total) + '</div><div class=dash-hero-trend>monthly operating cost</div></div><div style=display:grid;grid-template-columns:1fr_1fr;gap:12px;margin:16px_0><div class=drill-card style=flex-direction:column;align-items:center;padding:14px><div class=drill-label>Fixed</div><div class=drill-value style=color:var(--amber)>' + fmt$(cost.fixed||0) + '</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:14px><div class=drill-label>Variable</div><div class=drill-value style=color:var(--red)>' + fmt$(cost.variable||0) + '</div></div></div><div style=padding:12px;background:var(--gray-mid);border-radius:8px;font-size:11px;line-height:1.8;color:var(--gray-light)><span style=color:var(--amber)>●</span> Fixed: rent, insurance, subscriptions, loans<br><span style=color:var(--red)>●</span> Variable: avg of last 3 months non-fixed expenses</div>\')"><div class="drill-label">Cost to Run</div><div class="drill-value" style="color:var(--amber)">' + fmt$(cost.total) + '</div><div style="font-size:8px;color:var(--gray-light)">breakdown ›</div></div></div>';
     })()}
+
+    <!-- SUBSCRIPTION DETECTIVE -->
+    ${(() => {
+      const subData = getSubscriptionSummary();
+      if(subData.count === 0) return '';
+      return '<div class="dash-section" style="display:flex;justify-content:space-between;align-items:center"><span style="color:var(--purple)">SUBSCRIPTIONS DETECTED</span><span style="font-family:JetBrains Mono;font-size:11px;color:var(--red)">' + fmt$(subData.totalMonthly) + '/mo</span></div>' +
+        '<div class="glass-card" style="padding:16px;margin-bottom:12px;cursor:pointer" onclick="showDrillPane(buildSubscriptionDrill())">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">' +
+            '<div><div style="font-family:Oswald,sans-serif;font-size:13px;color:var(--white)">' + subData.count + ' Active Subscription' + (subData.count!==1?'s':'') + '</div>' +
+            (subData.increased > 0 ? '<div style="font-size:9px;color:var(--red);margin-top:2px">' + subData.increased + ' increased in price</div>' : '') + '</div>' +
+            '<div style="text-align:right"><div style="font-family:JetBrains Mono;font-size:18px;color:var(--red)">' + fmt$(subData.totalMonthly) + '</div><div style="font-size:8px;color:var(--gray-light)">/month</div></div>' +
+          '</div>' +
+          '<div style="display:flex;justify-content:space-between;font-size:10px;padding-top:10px;border-top:1px solid var(--gray-faint)">' +
+            '<span style="color:var(--gray-light)">Annual cost</span>' +
+            '<span style="font-family:JetBrains Mono;color:var(--red)">' + fmt$(subData.totalAnnual) + '/yr</span>' +
+          '</div>' +
+          '<div style="font-size:8px;color:var(--amber);margin-top:8px;text-align:center">tap for full breakdown ›</div>' +
+        '</div>';
+    })()}
   `;
   } else if(view === 'goals'){
   // ── GOALS: Savings goals + debt payoff ──
@@ -33419,7 +33439,7 @@ function renderVaultBudget(container){
   // Savings Goals
   content += `
     <!-- SAVINGS GOALS SECTION -->
-    <div class="dash-section" style="display:flex;justify-content:space-between;align-items:center;color:var(--green)"><span>SAVINGS GOALS</span><button style="background:var(--green-dim);border:1px solid var(--green);border-radius:6px;padding:2px 8px;color:var(--green);font-size:10px;cursor:pointer" onclick="openGoalEditor()">+ Add</button></div>
+    <div class="dash-section" style="display:flex;justify-content:space-between;align-items:center;color:var(--green)"><span>SAVINGS GOALS</span><button style="background:var(--green-dim);border:1px solid var(--green);border-radius:6px;padding:8px 12px;color:var(--green);font-size:10px;cursor:pointer" onclick="openGoalEditor()">+ Add</button></div>
   `;
   content += (budget.savingsGoals||[]).length === 0 ? '<div style="text-align:center;padding:16px;color:rgba(255,255,255,0.3);font-size:11px">No savings goals yet.</div>' : (budget.savingsGoals||[]).map(goal => {
     const pct = goal.target > 0 ? Math.min(100, ((goal.current||0) / goal.target) * 100) : 0;
@@ -33440,7 +33460,7 @@ function renderVaultBudget(container){
     </div>`;
   }).join('');
   // Debt Payoff
-  content += `<div class="dash-section" style="display:flex;justify-content:space-between;align-items:center;color:var(--red);margin-top:24px"><span>DEBT PAYOFF</span><button style="background:var(--red-dim);border:1px solid var(--red);border-radius:6px;padding:2px 8px;color:var(--red);font-size:10px;cursor:pointer" onclick="openDebtEditor()">+ Add</button></div>`;
+  content += `<div class="dash-section" style="display:flex;justify-content:space-between;align-items:center;color:var(--red);margin-top:24px"><span>DEBT PAYOFF</span><button style="background:var(--red-dim);border:1px solid var(--red);border-radius:6px;padding:8px 12px;color:var(--red);font-size:10px;cursor:pointer" onclick="openDebtEditor()">+ Add</button></div>`;
   const debts = (budget.debts||[]).slice().sort((a,b) => (b.interestRate||0) - (a.interestRate||0));
   if(debts.length === 0){
     content += '<div style="text-align:center;padding:16px;color:rgba(255,255,255,0.3);font-size:11px">No debts tracked.</div>';
@@ -33468,7 +33488,7 @@ function renderVaultBudget(container){
       <div class="dash-hero-value hero-3d ${remainBills>0?'negative':'positive'}" style="font-size:42px" data-animate-value="${remainBills}" data-animate-prefix="$">${fmt$(remainBills)}</div>
       <div class="dash-hero-trend">${remainBills>0?bills.filter(b=>!b.paidThisMonth).length+' unpaid':'All paid'} · Total: ${fmt$(totalBillsAmt)}</div>
     </div>
-    <div class="dash-section" style="display:flex;justify-content:space-between;align-items:center;color:var(--amber)"><span>BILLS</span><button style="background:var(--amber-dim);border:1px solid var(--amber);border-radius:6px;padding:2px 8px;color:var(--amber);font-size:10px;cursor:pointer" onclick="openBillEditor()">+ Add</button></div>
+    <div class="dash-section" style="display:flex;justify-content:space-between;align-items:center;color:var(--amber)"><span>BILLS</span><button style="background:var(--amber-dim);border:1px solid var(--amber);border-radius:6px;padding:8px 12px;color:var(--amber);font-size:10px;cursor:pointer" onclick="openBillEditor()">+ Add</button></div>
   `;
   const today = new Date();
   const currentDay = today.getDate();
@@ -33583,7 +33603,7 @@ function renderVaultBudget(container){
 void function(){ /* <!-- BILLS SECTION -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 8px">
       <div style="font-size:10px;color:var(--amber);text-transform:uppercase;letter-spacing:0.1em;font-family:Oswald,sans-serif">RECURRING BILLS</div>
-      <button style="background:var(--amber-dim);border:1px solid var(--amber);border-radius:6px;padding:2px 8px;color:var(--amber);font-size:10px;cursor:pointer" onclick="openBillEditor()">+ Add</button>
+      <button style="background:var(--amber-dim);border:1px solid var(--amber);border-radius:6px;padding:8px 12px;color:var(--amber);font-size:10px;cursor:pointer" onclick="openBillEditor()">+ Add</button>
     </div>
     ${(() => {
       const bills = (budget.bills||[]).slice().sort((a,b) => (a.dueDay||1) - (b.dueDay||1));
@@ -33613,7 +33633,7 @@ void function(){ /* <!-- BILLS SECTION -->
     <!-- SAVINGS GOALS SECTION -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 8px">
       <div style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:0.1em;font-family:Oswald,sans-serif">SAVINGS GOALS</div>
-      <button style="background:var(--green-dim);border:1px solid var(--green);border-radius:6px;padding:2px 8px;color:var(--green);font-size:10px;cursor:pointer" onclick="openGoalEditor()">+ Add</button>
+      <button style="background:var(--green-dim);border:1px solid var(--green);border-radius:6px;padding:8px 12px;color:var(--green);font-size:10px;cursor:pointer" onclick="openGoalEditor()">+ Add</button>
     </div>
     ${(budget.savingsGoals||[]).length === 0 ? '<div style="text-align:center;padding:16px;color:rgba(255,255,255,0.3);font-size:11px">No savings goals yet. Set targets to track your progress.</div>' : (budget.savingsGoals||[]).map(goal => {
       const pct = goal.target > 0 ? Math.min(100, ((goal.current||0) / goal.target) * 100) : 0;
@@ -33638,7 +33658,7 @@ void function(){ /* <!-- BILLS SECTION -->
     <!-- DEBT PAYOFF SECTION -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin:20px 0 8px">
       <div style="font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:0.1em;font-family:Oswald,sans-serif">DEBT PAYOFF</div>
-      <button style="background:var(--red-dim);border:1px solid var(--red);border-radius:6px;padding:2px 8px;color:var(--red);font-size:10px;cursor:pointer" onclick="openDebtEditor()">+ Add</button>
+      <button style="background:var(--red-dim);border:1px solid var(--red);border-radius:6px;padding:8px 12px;color:var(--red);font-size:10px;cursor:pointer" onclick="openDebtEditor()">+ Add</button>
     </div>
     ${(() => {
       const debts = (budget.debts||[]).slice().sort((a,b) => (b.interestRate||0) - (a.interestRate||0));
@@ -33784,8 +33804,70 @@ function deleteBill(id){const budget=(S.budgets||[])[0];if(!budget||!confirm('De
 function toggleBillPaid(billId){const budget=(S.budgets||[])[0];if(!budget)return;const bill=(budget.bills||[]).find(b=>b.id===billId);if(!bill)return;bill.paidThisMonth=!bill.paidThisMonth;budget._updatedAt=Date.now();save('budgets',budget.id,'upsert');renderVaultModule();toast(bill.paidThisMonth?'✓ '+bill.name+' marked paid':'✓ '+bill.name+' marked unpaid');}
 
 // ── SAVINGS GOAL HELPERS ──
-function openGoalEditor(goalId){const budget=(S.budgets||[])[0];if(!budget)return;budget.savingsGoals=budget.savingsGoals||[];const goal=goalId?budget.savingsGoals.find(g=>g.id===goalId):null;const isEdit=!!goal;const colors=['green','cyan','purple','amber','pink','red'];const m=document.createElement('div');m.className='share-avail-modal';m.id='goalModal';m.onclick=e=>{if(e.target===m)m.remove();};m.innerHTML='<div class="share-avail-content"><div class="share-avail-header"><h3 style="color:var(--green);font-size:14px;letter-spacing:0.1em;font-family:Oswald,sans-serif">'+(isEdit?'EDIT':'ADD')+' SAVINGS GOAL</h3><button class="share-avail-close" onclick="this.closest(\'.share-avail-modal\').remove()">✕</button></div><div style="padding:16px"><div style="margin-bottom:12px"><label style="font-size:10px;color:var(--gray-light);text-transform:uppercase">Goal Name</label><input id="goalName" type="text" value="'+esc(goal?.name||'')+'" placeholder="e.g. Emergency Fund, Vacation" style="width:100%;background:var(--gray-mid);border:1px solid var(--gray-faint);border-radius:8px;padding:10px;color:var(--white);font-size:14px;margin-top:4px"></div><div style="margin-bottom:12px"><label style="font-size:10px;color:var(--gray-light);text-transform:uppercase">Target Amount</label><input id="goalTarget" type="number" step="0.01" value="'+(goal?.target||0)+'" style="width:100%;background:var(--gray-mid);border:1px solid var(--gray-faint);border-radius:8px;padding:10px;color:var(--green);font-family:JetBrains Mono;font-size:16px;margin-top:4px"></div><div style="margin-bottom:12px"><label style="font-size:10px;color:var(--gray-light);text-transform:uppercase">Current Saved</label><input id="goalCurrent" type="number" step="0.01" value="'+(goal?.current||0)+'" style="width:100%;background:var(--gray-mid);border:1px solid var(--gray-faint);border-radius:8px;padding:10px;color:var(--cyan);font-family:JetBrains Mono;font-size:16px;margin-top:4px"></div><div style="margin-bottom:12px"><label style="font-size:10px;color:var(--gray-light);text-transform:uppercase">Color</label><div style="display:flex;gap:8px;margin-top:4px">'+colors.map(c=>'<button style="width:28px;height:28px;border-radius:50%;background:var(--'+c+');border:'+(c===(goal?.color||'green')?'3px solid var(--white)':'2px solid transparent')+';cursor:pointer" onclick="document.querySelectorAll(\'#goalModal .color-pick\').forEach(b=>b.style.border=\'2px solid transparent\');this.style.border=\'3px solid var(--white)\';this.dataset.picked=\'1\'" class="color-pick" data-color="'+c+'" '+(c===(goal?.color||'green')?'data-picked="1"':'')+'></button>').join('')+'</div></div><button class="share-gen-btn" style="background:var(--green);width:100%" onclick="saveGoal(\''+(goalId||'')+'\')">'+(isEdit?'Update':'Add')+' Goal</button>'+(isEdit?'<button class="share-gen-btn" style="background:#374151;width:100%;margin-top:6px;color:var(--red)" onclick="deleteGoal(\''+goalId+'\')">Delete</button>':'')+'</div></div>';document.body.appendChild(m);}
-function saveGoal(editId){const budget=(S.budgets||[])[0];if(!budget)return;const name=document.getElementById('goalName').value.trim();const target=parseFloat(document.getElementById('goalTarget').value)||0;const current=parseFloat(document.getElementById('goalCurrent').value)||0;const pickedBtn=document.querySelector('#goalModal .color-pick[data-picked="1"]');const color=pickedBtn?pickedBtn.dataset.color:'green';if(!name){toast('Enter a goal name');return;}if(target<=0){toast('Enter a target amount');return;}budget.savingsGoals=budget.savingsGoals||[];if(editId){const goal=budget.savingsGoals.find(g=>g.id===editId);if(goal){goal.name=name;goal.target=target;goal.current=current;goal.color=color;}}else{budget.savingsGoals.push({id:uid(),name,target,current,color});}budget._updatedAt=Date.now();save('budgets',budget.id,'upsert');document.getElementById('goalModal')?.remove();renderVaultModule();toast('✓ Goal saved');}
+function openGoalEditor(goalId){
+  const budget=(S.budgets||[])[0]; if(!budget) return;
+  budget.savingsGoals=budget.savingsGoals||[];
+  const goal=goalId?budget.savingsGoals.find(g=>g.id===goalId):null;
+  const isEdit=!!goal;
+  const colors=['green','cyan','purple','amber','pink','red'];
+  document.getElementById('goalModal')?.remove();
+  const m=document.createElement('div');
+  m.className='share-avail-modal'; m.id='goalModal';
+  m.onclick=e=>{if(e.target===m)m.remove();};
+  m.innerHTML=`<div class="share-avail-content" style="border-left:3px solid var(--green)">
+    <div class="share-avail-header">
+      <h3 style="color:var(--green);font-size:14px;letter-spacing:0.1em;font-family:Oswald,sans-serif">${isEdit?'EDIT':'ADD'} SAVINGS GOAL</h3>
+      <button class="share-avail-close" onclick="document.getElementById('goalModal').remove()">✕</button>
+    </div>
+    <div style="padding:16px">
+      <div style="margin-bottom:12px"><label style="font-size:10px;color:var(--gray-light);text-transform:uppercase;letter-spacing:0.08em">Goal Name</label>
+        <input id="goalName" type="text" value="${esc(goal?.name||'')}" placeholder="e.g. Emergency Fund, Vacation" style="width:100%;box-sizing:border-box;background:var(--gray-mid);border:1px solid var(--gray-faint);border-radius:8px;padding:10px;color:var(--white);font-size:14px;margin-top:4px"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div><label style="font-size:10px;color:var(--gray-light);text-transform:uppercase;letter-spacing:0.08em">Target</label>
+          <input id="goalTarget" type="number" step="0.01" value="${goal?.target||0}" style="width:100%;box-sizing:border-box;background:var(--gray-mid);border:1px solid var(--gray-faint);border-radius:8px;padding:10px;color:var(--green);font-family:JetBrains Mono;font-size:14px;margin-top:4px"></div>
+        <div><label style="font-size:10px;color:var(--gray-light);text-transform:uppercase;letter-spacing:0.08em">Saved So Far</label>
+          <input id="goalCurrent" type="number" step="0.01" value="${goal?.current||0}" style="width:100%;box-sizing:border-box;background:var(--gray-mid);border:1px solid var(--gray-faint);border-radius:8px;padding:10px;color:var(--cyan);font-family:JetBrains Mono;font-size:14px;margin-top:4px"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div><label style="font-size:10px;color:var(--gray-light);text-transform:uppercase;letter-spacing:0.08em">Target Date</label>
+          <input id="goalTargetDate" type="date" value="${goal?.targetDate||''}" style="width:100%;box-sizing:border-box;background:var(--gray-mid);border:1px solid var(--gray-faint);border-radius:8px;padding:10px;color:var(--amber);font-size:12px;margin-top:4px"></div>
+        <div><label style="font-size:10px;color:var(--gray-light);text-transform:uppercase;letter-spacing:0.08em">Monthly Contrib.</label>
+          <input id="goalMonthly" type="number" step="1" value="${goal?.monthlyContribution||0}" placeholder="0" style="width:100%;box-sizing:border-box;background:var(--gray-mid);border:1px solid var(--gray-faint);border-radius:8px;padding:10px;color:var(--purple);font-family:JetBrains Mono;font-size:14px;margin-top:4px"></div>
+      </div>
+      <div style="margin-bottom:16px"><label style="font-size:10px;color:var(--gray-light);text-transform:uppercase;letter-spacing:0.08em">Color</label>
+        <div style="display:flex;gap:8px;margin-top:6px">${colors.map(c=>`<button style="width:32px;height:32px;border-radius:50%;background:var(--${c});border:${c===(goal?.color||'green')?'3px solid var(--white)':'2px solid transparent'};cursor:pointer" onclick="document.querySelectorAll('#goalModal .color-pick').forEach(b=>b.style.border='2px solid transparent');this.style.border='3px solid var(--white)';this.dataset.picked='1'" class="color-pick" data-color="${c}" ${c===(goal?.color||'green')?'data-picked="1"':''}></button>`).join('')}</div>
+      </div>
+      <button class="share-gen-btn" style="background:var(--green);width:100%;cursor:pointer" id="goalSaveBtn">${isEdit?'Update':'Add'} Goal</button>
+      ${isEdit?'<button class="share-gen-btn" style="background:var(--gray-dark);width:100%;margin-top:6px;color:var(--red);cursor:pointer;border:1px solid var(--red-dim)" id="goalDeleteBtn">Delete</button>':''}
+    </div></div>`;
+  document.body.appendChild(m);
+  document.getElementById('goalSaveBtn').addEventListener('click',function(){saveGoal(goalId||'');});
+  if(isEdit) document.getElementById('goalDeleteBtn')?.addEventListener('click',function(){deleteGoal(goalId);});
+}
+function saveGoal(editId){
+  const budget=(S.budgets||[])[0]; if(!budget) return;
+  const name=document.getElementById('goalName').value.trim();
+  const target=parseFloat(document.getElementById('goalTarget').value)||0;
+  const current=parseFloat(document.getElementById('goalCurrent').value)||0;
+  const targetDate=document.getElementById('goalTargetDate')?.value||'';
+  const monthlyContribution=parseFloat(document.getElementById('goalMonthly')?.value)||0;
+  const pickedBtn=document.querySelector('#goalModal .color-pick[data-picked="1"]');
+  const color=pickedBtn?pickedBtn.dataset.color:'green';
+  if(!name){toast('Enter a goal name');return;}
+  if(target<=0){toast('Enter a target amount');return;}
+  budget.savingsGoals=budget.savingsGoals||[];
+  if(editId){
+    const goal=budget.savingsGoals.find(g=>g.id===editId);
+    if(goal){goal.name=name;goal.target=target;goal.current=current;goal.color=color;goal.targetDate=targetDate;goal.monthlyContribution=monthlyContribution;}
+  } else {
+    budget.savingsGoals.push({id:uid(),name,target,current,color,targetDate,monthlyContribution});
+  }
+  budget._updatedAt=Date.now();
+  save('budgets',budget.id,'upsert');
+  document.getElementById('goalModal')?.remove();
+  renderVaultModule();
+  toast('✓ Goal saved');
+}
 function deleteGoal(id){const budget=(S.budgets||[])[0];if(!budget||!confirm('Delete this savings goal?'))return;budget.savingsGoals=(budget.savingsGoals||[]).filter(g=>g.id!==id);budget._updatedAt=Date.now();save('budgets',budget.id,'upsert');document.getElementById('goalModal')?.remove();renderVaultModule();toast('Goal deleted');}
 
 // ── DEBT PAYOFF HELPERS ──
@@ -33949,6 +34031,148 @@ function applyBudgetTemplate(templateKey){
 // ============================================
 // BUD-7: PROJECTED END-OF-MONTH BALANCE
 // ============================================
+// ── SUBSCRIPTION DETECTIVE ──
+function detectSubscriptions(){
+  const expenses = S.expenses || [];
+  if(expenses.length < 3) return [];
+
+  // Group by normalized vendor name
+  const vendorGroups = {};
+  expenses.forEach(e => {
+    const vendor = (e.vendor || e.description || '').trim().toLowerCase();
+    if(!vendor || vendor.length < 2) return;
+    if(!vendorGroups[vendor]) vendorGroups[vendor] = [];
+    vendorGroups[vendor].push({amount: e.amount||0, date: e.date, id: e.id, category: e.category});
+  });
+
+  const subs = [];
+  Object.entries(vendorGroups).forEach(([vendor, entries]) => {
+    if(entries.length < 2) return;
+
+    // Sort by date
+    entries.sort((a,b) => new Date(a.date) - new Date(b.date));
+
+    // Check for recurring pattern — similar amounts at regular intervals
+    const amounts = entries.map(e => e.amount);
+    const avgAmount = amounts.reduce((s,a) => s+a, 0) / amounts.length;
+    const amountVariance = amounts.every(a => Math.abs(a - avgAmount) / avgAmount < 0.15);
+
+    if(!amountVariance) return; // amounts vary too much, not a subscription
+
+    // Check interval regularity
+    const intervals = [];
+    for(let i = 1; i < entries.length; i++){
+      const diff = Math.round((new Date(entries[i].date) - new Date(entries[i-1].date)) / (1000*60*60*24));
+      intervals.push(diff);
+    }
+    const avgInterval = intervals.reduce((s,d) => s+d, 0) / intervals.length;
+
+    // Classify frequency
+    let frequency = null;
+    if(avgInterval >= 25 && avgInterval <= 35) frequency = 'monthly';
+    else if(avgInterval >= 12 && avgInterval <= 16) frequency = 'biweekly';
+    else if(avgInterval >= 5 && avgInterval <= 9) frequency = 'weekly';
+    else if(avgInterval >= 85 && avgInterval <= 100) frequency = 'quarterly';
+    else if(avgInterval >= 350 && avgInterval <= 380) frequency = 'annual';
+
+    if(!frequency) return;
+
+    // Detect price changes
+    const latest = entries[entries.length - 1];
+    const previous = entries.length >= 2 ? entries[entries.length - 2] : null;
+    const oldest = entries[0];
+    const priceChange = previous ? ((latest.amount - previous.amount) / previous.amount * 100) : 0;
+    const totalChange = entries.length >= 3 ? ((latest.amount - oldest.amount) / oldest.amount * 100) : 0;
+
+    // Monthly cost normalization
+    const monthlyMultiplier = frequency === 'weekly' ? 4.33 : frequency === 'biweekly' ? 2.17 : frequency === 'quarterly' ? 0.33 : frequency === 'annual' ? 0.083 : 1;
+    const monthlyCost = avgAmount * monthlyMultiplier;
+
+    // Proper-case vendor name
+    const displayName = (vendor.charAt(0).toUpperCase() + vendor.slice(1)).substring(0, 30);
+
+    subs.push({
+      vendor: displayName,
+      vendorKey: vendor,
+      amount: latest.amount,
+      monthlyCost: monthlyCost,
+      annualCost: monthlyCost * 12,
+      frequency,
+      occurrences: entries.length,
+      lastCharge: latest.date,
+      priceChange: Math.round(priceChange * 10) / 10,
+      totalChange: Math.round(totalChange * 10) / 10,
+      category: latest.category || 'other',
+      classification: null // user sets: essential / nice-to-have / cancel
+    });
+  });
+
+  // Sort by monthly cost descending
+  subs.sort((a,b) => b.monthlyCost - a.monthlyCost);
+  return subs;
+}
+
+function getSubscriptionSummary(){
+  const subs = detectSubscriptions();
+  const totalMonthly = subs.reduce((s,sub) => s + sub.monthlyCost, 0);
+  const totalAnnual = totalMonthly * 12;
+  const increased = subs.filter(s => s.priceChange > 0);
+  return { subs, totalMonthly, totalAnnual, count: subs.length, increased: increased.length };
+}
+
+// ── SUBSCRIPTION DETECTIVE Drill Pane ──
+function buildSubscriptionDrill(){
+  const subData = getSubscriptionSummary();
+  const subs = subData.subs;
+
+  let html = '<div class="dash-hero">' +
+    '<div class="dash-hero-label">SUBSCRIPTION DETECTIVE</div>' +
+    '<div class="hero-3d negative" style="font-size:36px">' + fmt$(subData.totalMonthly) + '<span style="font-size:16px;opacity:0.5">/mo</span></div>' +
+    '<div class="dash-hero-trend">' + subData.count + ' subscriptions · ' + fmt$(subData.totalAnnual) + '/year</div>' +
+    '</div>';
+
+  // Isometric chart of top subs
+  if(subs.length > 0){
+    const topBars = subs.slice(0,6).map(function(s){
+      return {label:s.vendor.substring(0,6), value:s.monthlyCost, color: s.priceChange > 0 ? '#EF4444' : '#A855F7'};
+    });
+    html += '<div class="glass-card" style="padding:16px;margin-bottom:16px">' +
+      '<div style="font-size:10px;color:var(--purple);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;font-family:Oswald,sans-serif">Monthly Burn</div>' +
+      renderIsometricBars(topBars, 90) + '</div>';
+  }
+
+  // Individual subscription cards
+  subs.forEach(function(sub){
+    const freqLabel = sub.frequency === 'monthly' ? '/mo' : sub.frequency === 'weekly' ? '/wk' : sub.frequency === 'biweekly' ? '/2wk' : sub.frequency === 'quarterly' ? '/qtr' : sub.frequency === 'annual' ? '/yr' : '';
+    const changeIcon = sub.priceChange > 0 ? '<span style="color:var(--red);font-size:9px;margin-left:4px">↑ +' + sub.priceChange + '%</span>' :
+                        sub.priceChange < 0 ? '<span style="color:var(--green);font-size:9px;margin-left:4px">↓ ' + sub.priceChange + '%</span>' : '';
+    const totalChangeNote = sub.totalChange > 5 ? '<div style="font-size:8px;color:var(--red);margin-top:2px">Up ' + Math.round(sub.totalChange) + '% since first detected</div>' : '';
+
+    html += '<div class="drill-card" style="border-left:3px solid var(--purple);padding:12px;cursor:pointer" onclick="closeDrillPane();expenseFilter=\'all\';window.expenseSearchTerm=\'' + sub.vendorKey + '\';expenseViewMode=\'expenses\';openPanel(\'expenses\')">' +
+      '<div style="flex:1">' +
+        '<div style="display:flex;align-items:center;gap:6px">' +
+          '<div style="font-size:12px;color:var(--white)">' + esc(sub.vendor) + '</div>' +
+          changeIcon +
+        '</div>' +
+        '<div style="font-size:9px;color:var(--gray-light);margin-top:2px">' + sub.frequency + ' · ' + sub.occurrences + ' charges · last ' + sub.lastCharge + '</div>' +
+        totalChangeNote +
+      '</div>' +
+      '<div style="text-align:right">' +
+        '<div style="font-family:JetBrains Mono;font-size:14px;color:var(--red)">' + fmt$(sub.amount) + freqLabel + '</div>' +
+        '<div style="font-size:8px;color:var(--gray-light)">' + fmt$(sub.monthlyCost) + '/mo</div>' +
+      '</div>' +
+    '</div>';
+  });
+
+  // Summary
+  html += '<div class="glass-card" style="padding:14px;margin-top:12px;text-align:center">' +
+    '<div style="font-size:10px;color:var(--gray-light);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px;font-family:Oswald,sans-serif">IF YOU CANCELLED EVERYTHING</div>' +
+    '<div style="font-family:JetBrains Mono;font-size:24px;color:var(--green)">+' + fmt$(subData.totalAnnual) + '</div>' +
+    '<div style="font-size:10px;color:var(--gray-light);margin-top:2px">saved per year</div></div>';
+
+  return html;
+}
+
 // ── "IN MY POCKET" Drill Pane Builder ──
 function buildPocketDrill(){
   const p = calcSafeToSpend();
