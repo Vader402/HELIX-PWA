@@ -1,0 +1,4 @@
+# STAGING SITE — Do not index
+# Production site is at https://gethelix.net
+User-agent: *
+Disallow: /
