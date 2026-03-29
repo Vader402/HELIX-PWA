@@ -13572,7 +13572,7 @@ body.crossroads-active {
         </div>
         
         <!-- SAVE button - always visible -->
-        <button class="hx-save-btn" id="bookingSaveBtn" onclick="saveBooking()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--green),#059669);border:none;border-radius:12px;font-family:Oswald;font-size:14px;letter-spacing:0.1em;color:white;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 20px var(--green-glow)">
+        <button class="hx-save-btn" id="bookingSaveBtn" onclick="saveBookingFromModal()" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--green),#059669);border:none;border-radius:12px;font-family:Oswald;font-size:14px;letter-spacing:0.1em;color:white;cursor:pointer;margin-bottom:16px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 20px var(--green-glow)">
           <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2"><polyline points="20 6 9 17 4 12"/></svg>
           SAVE BOOKING
         </button>
@@ -44040,7 +44040,7 @@ function outreachToSchedule(){
     closeOutreachModal();
     openPanel('schedule');
     setTimeout(() => {
-      openEvtModal();
+      openEvtEditor(null, new Date().toISOString().split('T')[0], new Date().getHours());
       setTimeout(() => {
         document.getElementById('evtTitleInput').value = 'Meeting: ' + biz;
         document.getElementById('evtProspect').value = newP.id;
@@ -44052,7 +44052,7 @@ function outreachToSchedule(){
     closeOutreachModal();
     openPanel('schedule');
     setTimeout(() => {
-      openEvtModal();
+      openEvtEditor(null, new Date().toISOString().split('T')[0], new Date().getHours());
       setTimeout(() => {
         if(p){
           document.getElementById('evtTitleInput').value = 'Meeting: ' + p.biz;
@@ -44723,7 +44723,7 @@ function logP(d,n){
   toast(n>0?'🧈 +4 barrels':'Adjusted');
 }
 
-function adjInv(f,n){
+function adjProdInv(f,n){
   S.inventory=S.inventory||{};
   S.inventory[f]=(S.inventory[f]||0)+n;
   if(S.inventory[f]<0)S.inventory[f]=0;
@@ -48837,11 +48837,11 @@ function textClique(id){
 function planHangout(id){
   const clique = S.cliques?.find(c => c.id === id);
   if(!clique) return;
-  openEvtModal();
+  openEvtEditor(null, new Date().toISOString().split('T')[0], new Date().getHours());
   setTimeout(() => {
-    const titleInput = document.getElementById('evtTitle');
+    const titleInput = document.getElementById('evtTitleInput');
     if(titleInput) titleInput.value = `Hangout with ${clique.name}`;
-    const notesInput = document.getElementById('evtNotes');
+    const notesInput = document.getElementById('evtNotesInput');
     if(notesInput) notesInput.value = `Clique: ${clique.name}\nMembers: ${clique.contacts?.length || 0}`;
   }, 100);
 }
