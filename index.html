@@ -34802,6 +34802,9 @@ function renderReport_pnl(container, period, customStart, customEnd){
   html += '<div class="dash-hero-trend '+(parseFloat(netChange)>=0?'up':'down')+'">'+chg(netChange)+' vs prior</div>';
   html += '</div>';
 
+  // Build category entries early so alt view can use them
+  const catEntries = Object.entries(catMap).sort(function(a,b){return b[1]-a[1];});
+
   // Alt view: NeonTube revenue vs expenses
   if(pnlAlt){
     html += '<div class="glass-card" style="padding:20px;margin-bottom:20px">';
@@ -34854,7 +34857,6 @@ function renderReport_pnl(container, period, customStart, customEnd){
   html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">';
   html += '<div style="font-family:Oswald,sans-serif;font-size:12px;color:var(--red);text-transform:uppercase;letter-spacing:0.1em">Expenses</div>';
   html += '<div style="font-size:10px">'+chgExp(expChange)+'</div></div>';
-  const catEntries = Object.entries(catMap).sort(function(a,b){return b[1]-a[1];});
   if(catEntries.length===0){
     html += '<div style="font-size:11px;color:rgba(255,255,255,0.3);padding:4px 0">No expenses this period</div>';
   } else {
@@ -35535,7 +35537,9 @@ function renderReport_cashflow(container){
   var cashFromClients = paidInvoices.reduce(function(s,i){return s+(i.total||0);},0);
 
   var periodExpenses = (S.expenses||[]).filter(function(e){var d=new Date(e.date);return d>=p.start&&d<=p.end;});
-  var cashToVendors = periodExpenses.reduce(function(s,e){return s+(e.amount||0);},0);
+  var investingCats = ['equipment','asset','software','hardware'];
+  var operatingExpenses = periodExpenses.filter(function(e){return investingCats.indexOf(e.category)<0;});
+  var cashToVendors = operatingExpenses.reduce(function(s,e){return s+(e.amount||0);},0);
 
   // Mileage reimbursements as operating outflow
   var mileageExp = periodExpenses.filter(function(e){return e.category==='mileage';}).reduce(function(s,e){return s+(e.amount||0);},0);
@@ -35545,8 +35549,7 @@ function renderReport_cashflow(container){
 
   var netOperating = cashFromClients - cashToVendors - taxPaid;
 
-  // ── Investing Activities (equipment/asset purchases flagged as 'equipment' or 'asset') ──
-  var investingCats = ['equipment','asset','software','hardware'];
+  // ── Investing Activities (equipment/asset purchases — excluded from operating above) ──
   var investingExp = periodExpenses.filter(function(e){return investingCats.indexOf(e.category)>=0;});
   var capex = investingExp.reduce(function(s,e){return s+(e.amount||0);},0);
   var netInvesting = -capex;
@@ -58419,7 +58422,26 @@ document.addEventListener('keydown', function(e){
 
 </script>
 
-
+<script>
+// Service Worker Registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js').then(function(reg) {
+      console.log('[Helix SW] Registered, scope:', reg.scope);
+      reg.addEventListener('updatefound', function() {
+        var newWorker = reg.installing;
+        newWorker.addEventListener('statechange', function() {
+          if (newWorker.state === 'activated') {
+            console.log('[Helix SW] New version activated');
+          }
+        });
+      });
+    }).catch(function(err) {
+      console.warn('[Helix SW] Registration failed:', err);
+    });
+  });
+}
+</script>
 
 <!-- Month View Modal -->
 <div class="month-view-modal" id="monthViewModal">
