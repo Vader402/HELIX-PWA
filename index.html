@@ -24522,7 +24522,7 @@ function renderProducts(){
           ${margin > 0 ? `<span>· ${margin}% margin</span>` : ''}
         </div>
         <div class="card-actions">
-          <!-- orderProduct hidden until e-commerce ready -->
+          <button class="card-action email" onclick="event.stopPropagation();orderProduct('${p.id}')" title="Order">${SVG.cart || SVG.plus}</button>
           <button class="card-action schedule" onclick="event.stopPropagation();scheduleRestock('${p.id}')" title="Restock">${SVG.calendar}</button>
           <button class="card-action notes" onclick="event.stopPropagation();noteForProduct('${p.id}')" title="Notes">${SVG.layers || '<svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>'}</button>
           <button class="card-action tasks" onclick="event.stopPropagation();taskForProduct('${p.id}')" title="Task">${SVG.check}</button>
@@ -24535,7 +24535,45 @@ function renderProducts(){
 }
 
 // Product card action stubs
-function orderProduct(id){ /* disabled until e-commerce ready */ }
+function orderProduct(id){
+  const p = (S.products || []).find(x => x.id === id);
+  if(!p){ toast('Product not found'); return; }
+
+  const qty = prompt('Restock quantity for ' + p.name + ':', '1');
+  if(!qty || isNaN(parseInt(qty)) || parseInt(qty) <= 0) return;
+  const quantity = parseInt(qty);
+  const cost = (p.cost || p.price || 0) * quantity;
+
+  S.expenses = S.expenses || [];
+  const exp = {
+    id: uid(),
+    vendor: p.supplier || p.vendor || 'Restock',
+    amount: cost,
+    date: new Date().toISOString().split('T')[0],
+    category: 'supplies',
+    description: 'Restock: ' + p.name + ' x' + quantity,
+    jobId: null,
+    reimbursable: false,
+    paid: true,
+    paidDate: new Date().toISOString().split('T')[0],
+    receiptId: null,
+    txId: null,
+    invoiceId: null,
+    clientId: null,
+    _createdAt: Date.now(),
+    _updatedAt: Date.now(),
+    receipts: []
+  };
+  S.expenses.push(exp);
+  save('expenses', exp.id, 'upsert');
+
+  // Update product stock
+  p.stock = (p.stock || 0) + quantity;
+  save('products', p.id, 'upsert');
+
+  toast('✓ Restock order: ' + quantity + 'x ' + p.name + ' ($' + cost.toFixed(2) + ')');
+  if(typeof renderProducts === 'function') renderProducts();
+}
 function scheduleRestock(id){ 
   const p = S.products.find(x => x.id === id);
   if(p){
@@ -24630,6 +24668,7 @@ function renderOrdersView(){
     body.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--gray-light)">
       <div style="font-size:32px;margin-bottom:12px">🛒</div>
       <div>No active orders</div>
+      <button class="p-btn primary" style="margin-top:16px" onclick="createOrder()">Create Order</button>
     </div>`;
     return;
   }
@@ -24655,10 +24694,26 @@ function renderOrdersView(){
   body.innerHTML = html;
 }
 
-function createOrder(){ /* disabled until e-commerce ready */
+function createOrder(){
+  openExpenseModal();
+  setTimeout(function(){
+    selectExpCategory('supplies');
+    var vendor = document.getElementById('expVendor');
+    if(vendor) vendor.value = 'Purchase Order';
+    var desc = document.getElementById('expDesc');
+    if(desc) desc.value = 'Inventory order';
+    updateExpCardPreview();
+  }, 200);
 }
 
-function viewOrder(id){ /* disabled until e-commerce ready */
+function viewOrder(id){
+  const o = (S.orders || []).find(x => x.id === id);
+  if(!o){ toast('Order not found'); return; }
+
+  const prospect = (S.prospects || []).find(p => p.id === o.prospectId);
+  const itemList = (o.items || []).map(function(i){ return i.name + ' x' + (i.qty||1); }).join(', ');
+
+  toast('#' + (o.number || o.id.slice(-4)) + ' · ' + (prospect?.biz || 'Customer') + ' · ' + o.status.toUpperCase() + ' · $' + (o.total||0).toFixed(2) + (itemList ? ' · ' + itemList : ''), 5000);
 }
 
 function renderInvoicesView(){
@@ -25273,7 +25328,7 @@ function renderServices(){
       </div>
       <div class="card-meta">${s.description || 'No description'}</div>
       <div class="card-actions">
-        <!-- invoiceService hidden until e-commerce ready -->
+        <button class="card-action email" onclick="event.stopPropagation();invoiceService('${s.id}')" title="Invoice">${SVG.email}</button>
         <button class="card-action schedule" onclick="event.stopPropagation();scheduleService('${s.id}')" title="Schedule">${SVG.calendar}</button>
         <button class="card-action notes" onclick="event.stopPropagation();noteForService('${s.id}')" title="Notes">${'<svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>'}</button>
         <button class="card-action tasks" onclick="event.stopPropagation();logTimeForService('${s.id}')" title="Log Time">${SVG.clock || SVG.check}</button>
@@ -25285,7 +25340,54 @@ function renderServices(){
 }
 
 // Service card action stubs
-function invoiceService(id){ /* disabled until e-commerce ready */ }
+function invoiceService(id){
+  const s = (S.services || []).find(x => x.id === id);
+  if(!s){ toast('Service not found'); return; }
+
+  S.invoices = S.invoices || [];
+  const fs = S.financialSettings || {};
+  const prefix = fs.invoicePrefix || 'INV-';
+  const nextNum = fs.invoiceNextNumber || (S.invoices.length + 1);
+  const invNum = prefix + nextNum.toString().padStart(4, '0');
+
+  const rate = s.rate || s.price || 0;
+  const subtotal = rate;
+  const taxRate = fs.taxRate || 0;
+  const taxAmount = subtotal * (taxRate / 100);
+  const invoiceTotal = subtotal + taxAmount;
+
+  const termsDaysMap = {'due-on-receipt':0,'net15':15,'net30':30,'net45':45,'net60':60};
+  const termsDays = termsDaysMap[fs.defaultPaymentTerms] || 30;
+  const dueDate = new Date(Date.now() + termsDays * 24*60*60*1000).toISOString().split('T')[0];
+
+  const invId = uid();
+  S.invoices.push({
+    id: invId,
+    number: invNum,
+    clientId: null,
+    serviceId: s.id,
+    items: [{
+      description: s.name + (s.description ? ' — ' + s.description : ''),
+      qty: 1,
+      rate: rate,
+      total: subtotal
+    }],
+    subtotal: subtotal,
+    tax: taxAmount,
+    taxRate: taxRate,
+    total: invoiceTotal,
+    status: 'draft',
+    created: new Date().toISOString(),
+    dueDate: dueDate
+  });
+
+  S.financialSettings = S.financialSettings || {};
+  S.financialSettings.invoiceNextNumber = nextNum + 1;
+
+  save('invoices', invId, 'upsert');
+  toast('✓ Invoice ' + invNum + ' created from service');
+  openInvoiceModal(invId);
+}
 function scheduleService(id){
   const s = S.services.find(x => x.id === id);
   if(s){
