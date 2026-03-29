@@ -32398,6 +32398,97 @@ function drillToCategory(category){
 // ============================================
 const _drillStack = [];
 
+function showTaxIncomeDrill(taxableIncome, totalRevenue, totalExpenses, taxRate, estimatedTax){
+  showDrillPane(
+    '<div class="dash-hero"><div class="dash-hero-label">Taxable Income</div><div class="hero-3d '+(taxableIncome>=0?'positive':'negative')+'" style="font-size:36px">'+fmt$(taxableIncome)+'</div><div class="dash-hero-trend">Revenue \u2212 Deductions</div></div>'
+    + renderIsometricBars([{label:'Revenue',value:Math.max(1,totalRevenue),color:'#22C55E'},{label:'Deductions',value:Math.max(1,totalExpenses),color:'#EF4444'},{label:'Taxable',value:Math.max(1,Math.abs(taxableIncome)),color:'#F59E0B'}],90)
+    + '<div style="padding:12px;margin-top:12px;background:var(--gray-mid);border-radius:8px;font-size:11px;line-height:1.8;color:var(--gray-light)"><span style="color:var(--green)">\u25cf</span> Revenue: '+fmt$(totalRevenue)+'<br><span style="color:var(--red)">\u25cf</span> Deductions: '+fmt$(totalExpenses)+'<br><span style="color:var(--amber)">\u25cf</span> Tax ('+taxRate+'%): '+fmt$(estimatedTax)+'</div>'
+  );
+}
+
+function showQuarterTaxDrill(q, qTax, qRev, qExp, qTaxable, taxRate, isPast, dateRange){
+  showDrillPane(
+    '<div class="dash-hero"><div class="dash-hero-label">Q'+q+' Tax Estimate</div><div class="hero-3d gold" style="font-size:36px">'+fmt$(qTax)+'</div><div class="dash-hero-trend">'+dateRange+'</div></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:16px 0">'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:10px"><div class="drill-label" style="font-size:8px">Q'+q+' Revenue</div><div class="drill-value" style="color:var(--green);font-size:14px">'+fmt$(qRev)+'</div></div>'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:10px"><div class="drill-label" style="font-size:8px">Q'+q+' Expenses</div><div class="drill-value" style="color:var(--red);font-size:14px">'+fmt$(qExp)+'</div></div>'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:10px"><div class="drill-label" style="font-size:8px">Taxable</div><div class="drill-value" style="color:var(--amber);font-size:14px">'+fmt$(qTaxable)+'</div></div>'
+    + '</div>'
+    + '<div style="padding:12px;background:var(--gray-mid);border-radius:8px;font-size:11px;line-height:1.8;color:var(--gray-light)"><span style="color:var(--amber)">\u25cf</span> '+fmt$(qTaxable)+' \u00d7 '+taxRate+'% = '+fmt$(qTax)+'<br>'+(isPast?'<span style="color:var(--cyan)">\u25cf</span> Quarter complete \u2014 verify against actuals':'<span style="color:var(--gray-light)">\u25cf</span> Estimate based on pace so far')+'</div>'
+  );
+}
+
+function showWorkingCapitalDrill(currentAssets, currentLiab, wc){
+  showDrillPane(
+    '<div class="dash-hero"><div class="dash-hero-label">Working Capital</div><div class="hero-3d '+(wc>=0?'positive':'negative')+'" style="font-size:42px">'+(wc>=0?'':'-')+fmt$(Math.abs(wc))+'</div><div class="dash-hero-trend">Current Assets \u2212 Current Liabilities</div></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0">'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:14px;cursor:pointer" onclick="window.vault_balance_view=\'standard\';renderVaultModule();closeDrillPane()"><div class="drill-label">Current Assets</div><div class="drill-value" style="color:var(--green)">'+fmt$(currentAssets)+'</div></div>'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:14px;cursor:pointer" onclick="window.vault_balance_view=\'standard\';renderVaultModule();closeDrillPane()"><div class="drill-label">Current Liabilities</div><div class="drill-value" style="color:var(--red)">'+fmt$(currentLiab)+'</div></div>'
+    + '</div>'
+    + '<div style="padding:12px;background:var(--gray-mid);border-radius:8px;font-size:11px;line-height:1.8;color:var(--gray-light)"><span style="color:var(--green)">\u25cf</span> Positive = can cover short-term obligations<br><span style="color:var(--red)">\u25cf</span> Negative = may need financing</div>'
+  );
+}
+
+function showDPODrill(dpo, ap, ytdExp){
+  showDrillPane(
+    '<div class="dash-hero"><div class="dash-hero-label">Days Payable Outstanding</div><div class="hero-3d gold" style="font-size:42px">'+dpo+'d</div><div class="dash-hero-trend">How fast you pay vendors</div></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0">'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:14px"><div class="drill-label">A/P Balance</div><div class="drill-value" style="color:var(--red)">'+fmt$(ap)+'</div></div>'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:14px"><div class="drill-label">Annual Expenses</div><div class="drill-value" style="color:var(--red)">'+fmt$(ytdExp)+'</div></div>'
+    + '</div>'
+    + '<div style="padding:12px;background:var(--gray-mid);border-radius:8px;font-size:11px;line-height:1.8;color:var(--gray-light)"><span style="color:var(--green)">\u25cf</span> Higher DPO = you hold cash longer<br><span style="color:var(--amber)">\u25cf</span> Don\'t damage vendor relationships<br><span style="color:var(--cyan)">\u25cf</span> CCC = DSO + DIO \u2212 DPO</div>'
+  );
+}
+
+function showProjectedEOMDrill(proj){
+  showDrillPane(
+    '<div class="dash-hero"><div class="dash-hero-label">Projected End of Month</div><div class="hero-3d '+(proj.projected>=0?'positive':'negative')+'" style="font-size:36px">'+(proj.projected>=0?'':'\u2212')+fmt$(Math.abs(proj.projected))+'</div><div class="dash-hero-trend">'+proj.daysLeft+' days remaining</div></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0">'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px;cursor:pointer" onclick="closeDrillPane();vaultActiveModule=\'banking\';renderVaultModule();renderVaultModuleBar()"><div class="drill-label" style="font-size:8px">CASH NOW</div><div class="drill-value" style="color:var(--green);font-size:14px">'+fmt$(proj.currentCash)+'</div><div style="font-size:8px;color:var(--gray-light)">banking \u203a</div></div>'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px;cursor:pointer" onclick="closeDrillPane();openPanel(\'invoices\')"><div class="drill-label" style="font-size:8px">EXPECTED IN</div><div class="drill-value" style="color:var(--cyan);font-size:14px">+'+fmt$(proj.expectedIncome)+'</div><div style="font-size:8px;color:var(--gray-light)">invoices \u203a</div></div>'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px;cursor:pointer" onclick="closeDrillPane();window.vault_budget_view=\'bills\';selectVaultModule(\'budget\')"><div class="drill-label" style="font-size:8px">BILLS DUE</div><div class="drill-value" style="color:var(--red);font-size:14px">\u2212'+fmt$(proj.upcomingBills)+'</div><div style="font-size:8px;color:var(--gray-light)">bills \u203a</div></div>'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px;cursor:pointer" onclick="closeDrillPane();openPanel(\'expenses\')"><div class="drill-label" style="font-size:8px">RECURRING</div><div class="drill-value" style="color:var(--amber);font-size:14px">\u2212'+fmt$(Math.round(proj.recurringExpenses))+'</div><div style="font-size:8px;color:var(--gray-light)">expenses \u203a</div></div>'
+    + '</div>'
+  );
+}
+
+function showCostToRunDrill(cost){
+  showDrillPane(
+    '<div class="dash-hero"><div class="dash-hero-label">Cost to Run</div><div class="hero-3d gold" style="font-size:36px">'+fmt$(cost.total)+'</div><div class="dash-hero-trend">monthly operating cost</div></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0">'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:14px"><div class="drill-label">Fixed</div><div class="drill-value" style="color:var(--amber)">'+fmt$(cost.fixed||0)+'</div></div>'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:14px"><div class="drill-label">Variable</div><div class="drill-value" style="color:var(--red)">'+fmt$(cost.variable||0)+'</div></div>'
+    + '</div>'
+    + '<div style="padding:12px;background:var(--gray-mid);border-radius:8px;font-size:11px;line-height:1.8;color:var(--gray-light)"><span style="color:var(--amber)">\u25cf</span> Fixed: rent, insurance, subscriptions, loans<br><span style="color:var(--red)">\u25cf</span> Variable: avg of last 3 months non-fixed expenses</div>'
+  );
+}
+
+function showSnapshotDrill(period, assets, liab, equity, cash, ytdNet, dateStr){
+  showDrillPane(
+    '<div class="dash-hero"><div class="dash-hero-label">'+esc(period)+' Snapshot</div><div class="dash-hero-trend">Captured '+dateStr+'</div></div>'
+    + renderIsometricBars([{label:'Assets',value:Math.max(1,assets),color:'#22C55E'},{label:'Liab',value:Math.max(1,liab),color:'#EF4444'},{label:'Equity',value:Math.max(1,equity),color:'#A855F7'}],90)
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0">'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px"><div class="drill-label" style="font-size:8px">ASSETS</div><div class="drill-value" style="color:var(--green);font-size:16px">'+fmt$(assets)+'</div></div>'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px"><div class="drill-label" style="font-size:8px">LIABILITIES</div><div class="drill-value" style="color:var(--red);font-size:16px">'+fmt$(liab)+'</div></div>'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px"><div class="drill-label" style="font-size:8px">EQUITY</div><div class="drill-value" style="color:var(--purple);font-size:16px">'+fmt$(equity)+'</div></div>'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px"><div class="drill-label" style="font-size:8px">CASH</div><div class="drill-value" style="color:var(--cyan);font-size:16px">'+fmt$(cash)+'</div></div>'
+    + '</div>'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:14px"><div class="drill-label">YTD Net Income</div><div class="drill-value" style="color:var(--green);font-size:20px">'+fmt$(ytdNet)+'</div></div>'
+  );
+}
+
+function showRatioDrill(title, value, color, numerator, denominator, numLabel, denLabel, benchmark, insight){
+  showDrillPane(
+    '<div class="dash-hero"><div class="dash-hero-label">'+esc(title)+'</div><div class="hero-3d '+color+'" style="font-size:42px">'+value+'</div></div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0">'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:14px"><div class="drill-label">'+esc(numLabel)+'</div><div class="drill-value" style="color:var(--green)">'+fmt$(numerator)+'</div></div>'
+    + '<div class="drill-card" style="flex-direction:column;align-items:center;padding:14px"><div class="drill-label">'+esc(denLabel)+'</div><div class="drill-value" style="color:var(--red)">'+fmt$(denominator)+'</div></div>'
+    + '</div>'
+    + '<div class="glass-card" style="padding:16px;margin-bottom:12px">'+renderIsometricBars([{label:numLabel,value:Math.max(1,numerator),color:'#22C55E'},{label:denLabel,value:Math.max(1,denominator),color:'#EF4444'}],90)+'</div>'
+    + '<div style="padding:12px;background:var(--gray-mid);border-radius:8px;font-size:11px;line-height:1.6;color:var(--gray-light)"><span style="color:var(--green)">●</span> '+benchmark+'<br><span style="color:var(--amber)">●</span> '+insight+'</div>'
+  );
+}
+
 function showDrillPane(html){
   const depth = _drillStack.length;
   const zIndex = 180 + depth;
@@ -33021,7 +33112,7 @@ function renderVaultBalance(container){
       ${(S.financialSnapshots||[]).length > 0 ? `
         <div class="dash-section" style="color:var(--amber);margin-top:20px">PERIOD SNAPSHOTS (Audit Trail)</div>
         ${(S.financialSnapshots||[]).slice().reverse().map(snap => `
-          <div class="drill-card" style="border-left:3px solid var(--amber);padding:10px 14px;cursor:pointer" onclick="showDrillPane('<div class=dash-hero><div class=dash-hero-label>${esc(snap.period)} Snapshot</div><div class=dash-hero-trend>Captured ${new Date(snap.capturedAt).toLocaleDateString()}</div></div>' + '${renderIsometricBars([{label:\\'Assets\\',value:Math.max(1,${snap.totalAssets}),color:\\'#22C55E\\'},{label:\\'Liab\\',value:Math.max(1,${snap.totalLiabilities}),color:\\'#EF4444\\'},{label:\\'Equity\\',value:Math.max(1,${snap.totalEquity}),color:\\'#A855F7\\'}],90)}' + '<div style=display:grid;grid-template-columns:1fr_1fr;gap:10px;margin:16px_0><div class=drill-card style=flex-direction:column;align-items:center;padding:12px><div class=drill-label style=font-size:8px>ASSETS</div><div class=drill-value style=color:var(--green);font-size:16px>${fmt$(snap.totalAssets)}</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:12px><div class=drill-label style=font-size:8px>LIABILITIES</div><div class=drill-value style=color:var(--red);font-size:16px>${fmt$(snap.totalLiabilities)}</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:12px><div class=drill-label style=font-size:8px>EQUITY</div><div class=drill-value style=color:var(--purple);font-size:16px>${fmt$(snap.totalEquity)}</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:12px><div class=drill-label style=font-size:8px>CASH</div><div class=drill-value style=color:var(--cyan);font-size:16px>${fmt$(snap.cash||0)}</div></div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:14px><div class=drill-label>YTD Net Income</div><div class=drill-value style=color:var(--green);font-size:20px>${fmt$(snap.ytdNetIncome)}</div></div>')">
+          <div class="drill-card" style="border-left:3px solid var(--amber);padding:10px 14px;cursor:pointer" onclick="showSnapshotDrill('${esc(snap.period)}',${snap.totalAssets||0},${snap.totalLiabilities||0},${snap.totalEquity||0},${snap.cash||0},${snap.ytdNetIncome||0},'${new Date(snap.capturedAt).toLocaleDateString()}')">
             <div style="flex:1">
               <div style="font-family:Oswald,sans-serif;font-size:12px;color:var(--amber)">${esc(snap.period)}</div>
               <div style="font-size:9px;color:var(--gray-light);margin-top:2px">Captured ${new Date(snap.capturedAt).toLocaleDateString()}</div>
@@ -33055,15 +33146,12 @@ function renderVaultBalance(container){
 
     // Helper for ratio drill pane
     function ratioDrill(title, value, color, numerator, denominator, numLabel, denLabel, benchmark, insight){
-      return `<div class="drill-card" style="cursor:pointer;padding:14px" onclick="showDrillPane(
-        '<div class=dash-hero><div class=dash-hero-label>${title}</div><div class=hero-3d ${color} style=font-size:42px>${value}</div></div>' +
-        '<div style=display:grid;grid-template-columns:1fr_1fr;gap:12px;margin:16px_0>' +
-          '<div class=drill-card style=flex-direction:column;align-items:center;padding:14px><div class=drill-label>${numLabel}</div><div class=drill-value style=color:var(--green)>${fmt$(${numerator})}</div></div>' +
-          '<div class=drill-card style=flex-direction:column;align-items:center;padding:14px><div class=drill-label>${denLabel}</div><div class=drill-value style=color:var(--red)>${fmt$(${denominator})}</div></div>' +
-        '</div>' +
-        '<div class=glass-card style=padding:16px;margin-bottom:12px>${renderIsometricBars([{label:\\'${numLabel}\\',value:Math.max(1,${numerator}),color:\\'#22C55E\\'},{label:\\'${denLabel}\\',value:Math.max(1,${denominator}),color:\\'#EF4444\\'}],90)}</div>' +
-        '<div style=padding:12px;background:var(--gray-mid);border-radius:8px;font-size:11px;line-height:1.6;color:var(--gray-light)><span style=color:var(--green)>●</span> ${benchmark}<br><span style=color:var(--amber)>●</span> ${insight}</div>'
-      )">`;
+      const drillId = 'rd_'+Math.random().toString(36).substr(2,6);
+      setTimeout(()=>{
+        const el=document.getElementById(drillId);
+        if(el) el.onclick=()=>showRatioDrill(title,value,color,numerator,denominator,numLabel,denLabel,benchmark,insight);
+      },50);
+      return `<div class="drill-card" style="cursor:pointer;padding:14px" id="${drillId}">`;
     }
 
     content = `
@@ -33144,7 +33232,7 @@ function renderVaultBalance(container){
               </div>
             </div>
 
-            <div class="glass-card" style="padding:16px;cursor:pointer" onclick="showDrillPane('<div class=dash-hero><div class=dash-hero-label>Working Capital</div><div class=hero-3d ${wc>=0?'positive':'negative'} style=font-size:42px>${wc>=0?'':'-'}${fmt$(Math.abs(wc))}</div><div class=dash-hero-trend>Current Assets − Current Liabilities</div></div><div style=display:grid;grid-template-columns:1fr_1fr;gap:12px;margin:16px_0><div class=drill-card style=flex-direction:column;align-items:center;padding:14px onclick=window.vault_balance_view=\\'standard\\';renderVaultModule();closeDrillPane()><div class=drill-label>Current Assets</div><div class=drill-value style=color:var(--green)>${fmt$(totalCurrentAssets)}</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:14px onclick=window.vault_balance_view=\\'standard\\';renderVaultModule();closeDrillPane()><div class=drill-label>Current Liabilities</div><div class=drill-value style=color:var(--red)>${fmt$(totalCurrentLiab)}</div></div></div><div style=padding:12px;background:var(--gray-mid);border-radius:8px;font-size:11px;line-height:1.8;color:var(--gray-light)><span style=color:var(--green)>●</span> Positive = can cover short-term obligations<br><span style=color:var(--red)>●</span> Negative = may need financing</div>')">
+            <div class="glass-card" style="padding:16px;cursor:pointer" onclick="showWorkingCapitalDrill(${totalCurrentAssets},${totalCurrentLiab},${wc})">
               <div style="display:flex;justify-content:space-between;align-items:center">
                 <div>
                   <div style="font-family:Oswald,sans-serif;font-size:12px;color:var(--white);letter-spacing:0.05em">Working Capital</div>
@@ -33165,7 +33253,7 @@ function renderVaultBalance(container){
                   <div style="font-size:8px;color:var(--gray-light);margin-top:2px">collect speed ›</div>
                 </div>
               </div>
-              <div class="glass-card" style="padding:16px;cursor:pointer" onclick="showDrillPane('<div class=dash-hero><div class=dash-hero-label>Days Payable Outstanding</div><div class=hero-3d gold style=font-size:42px>${dpo}d</div><div class=dash-hero-trend>How fast you pay vendors</div></div><div style=display:grid;grid-template-columns:1fr_1fr;gap:12px;margin:16px_0><div class=drill-card style=flex-direction:column;align-items:center;padding:14px><div class=drill-label>A/P Balance</div><div class=drill-value style=color:var(--red)>${fmt$(ap)}</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:14px><div class=drill-label>Annual Expenses</div><div class=drill-value style=color:var(--red)>${fmt$(ytdExp)}</div></div></div><div style=padding:12px;background:var(--gray-mid);border-radius:8px;font-size:11px;line-height:1.8;color:var(--gray-light)><span style=color:var(--green)>●</span> Higher DPO = you hold cash longer<br><span style=color:var(--amber)>●</span> But don\\'t damage vendor relationships<br><span style=color:var(--cyan)>●</span> CCC = DSO + DIO − DPO</div>')">
+              <div class="glass-card" style="padding:16px;cursor:pointer" onclick="showDPODrill('${dpo}',${ap},${ytdExp})">
                 <div style="text-align:center">
                   <div style="font-family:Oswald,sans-serif;font-size:10px;color:var(--white);letter-spacing:0.05em">DPO</div>
                   <div class="hero-3d gold" style="font-size:24px;margin-top:4px">${dpo}d</div>
@@ -33401,9 +33489,17 @@ function renderVaultBudget(container){
     ${(() => {
       const proj = getProjectedEndOfMonth();
       const cost = getCostToRunBusiness();
+      const eomId = 'eom_'+Math.random().toString(36).substr(2,6);
+      const ctrId = 'ctr_'+Math.random().toString(36).substr(2,6);
+      setTimeout(()=>{
+        const e1=document.getElementById(eomId);
+        if(e1) e1.onclick=()=>showProjectedEOMDrill(proj);
+        const e2=document.getElementById(ctrId);
+        if(e2) e2.onclick=()=>showCostToRunDrill(cost);
+      },50);
       return '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">' +
-        '<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px;cursor:pointer" onclick="showDrillPane(\'<div class=dash-hero><div class=dash-hero-label>Projected End of Month</div><div class=hero-3d ' + (proj.projected>=0?'positive':'negative') + ' style=font-size:36px>' + (proj.projected>=0?'':'−') + fmt$(Math.abs(proj.projected)) + '</div><div class=dash-hero-trend>' + proj.daysLeft + ' days remaining</div></div><div style=display:grid;grid-template-columns:1fr_1fr;gap:10px;margin:16px_0><div class=drill-card style=flex-direction:column;align-items:center;padding:12px onclick=closeDrillPane();vaultActiveModule=\\'banking\\';renderVaultModule();renderVaultModuleBar()><div class=drill-label style=font-size:8px>CASH NOW</div><div class=drill-value style=color:var(--green);font-size:14px>' + fmt$(proj.currentCash) + '</div><div style=font-size:8px;color:var(--gray-light)>banking ›</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:12px onclick=closeDrillPane();openPanel(\\'invoices\\')><div class=drill-label style=font-size:8px>EXPECTED IN</div><div class=drill-value style=color:var(--cyan);font-size:14px>+' + fmt$(proj.expectedIncome) + '</div><div style=font-size:8px;color:var(--gray-light)>invoices ›</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:12px onclick=closeDrillPane();window.vault_budget_view=\\'bills\\';selectVaultModule(\\'budget\\')><div class=drill-label style=font-size:8px>BILLS DUE</div><div class=drill-value style=color:var(--red);font-size:14px>−' + fmt$(proj.upcomingBills) + '</div><div style=font-size:8px;color:var(--gray-light)>bills ›</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:12px onclick=closeDrillPane();openPanel(\\'expenses\\')><div class=drill-label style=font-size:8px>RECURRING</div><div class=drill-value style=color:var(--amber);font-size:14px>−' + fmt$(Math.round(proj.recurringExpenses)) + '</div><div style=font-size:8px;color:var(--gray-light)>expenses ›</div></div></div>\')"><div class="drill-label">Projected EOM</div><div class="drill-value" style="color:' + (proj.projected>=0?'var(--green)':'var(--red)') + '">' + fmt$(Math.abs(proj.projected)) + '</div><div style="font-size:8px;color:var(--gray-light)">' + proj.daysLeft + ' days left ›</div></div>' +
-        '<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px;cursor:pointer" onclick="showDrillPane(\'<div class=dash-hero><div class=dash-hero-label>Cost to Run</div><div class=hero-3d gold style=font-size:36px>' + fmt$(cost.total) + '</div><div class=dash-hero-trend>monthly operating cost</div></div><div style=display:grid;grid-template-columns:1fr_1fr;gap:12px;margin:16px_0><div class=drill-card style=flex-direction:column;align-items:center;padding:14px><div class=drill-label>Fixed</div><div class=drill-value style=color:var(--amber)>' + fmt$(cost.fixed||0) + '</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:14px><div class=drill-label>Variable</div><div class=drill-value style=color:var(--red)>' + fmt$(cost.variable||0) + '</div></div></div><div style=padding:12px;background:var(--gray-mid);border-radius:8px;font-size:11px;line-height:1.8;color:var(--gray-light)><span style=color:var(--amber)>●</span> Fixed: rent, insurance, subscriptions, loans<br><span style=color:var(--red)>●</span> Variable: avg of last 3 months non-fixed expenses</div>\')"><div class="drill-label">Cost to Run</div><div class="drill-value" style="color:var(--amber)">' + fmt$(cost.total) + '</div><div style="font-size:8px;color:var(--gray-light)">breakdown ›</div></div></div>';
+        '<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px;cursor:pointer" id="'+eomId+'"><div class="drill-label">Projected EOM</div><div class="drill-value" style="color:' + (proj.projected>=0?'var(--green)':'var(--red)') + '">' + fmt$(Math.abs(proj.projected)) + '</div><div style="font-size:8px;color:var(--gray-light)">' + proj.daysLeft + ' days left ›</div></div>' +
+        '<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px;cursor:pointer" id="'+ctrId+'"><div class="drill-label">Cost to Run</div><div class="drill-value" style="color:var(--amber)">' + fmt$(cost.total) + '</div><div style="font-size:8px;color:var(--gray-light)">breakdown ›</div></div></div>';
     })()}
 
     <!-- SUBSCRIPTION DETECTIVE -->
@@ -34395,7 +34491,7 @@ function renderVaultReports(container){
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
-        <div class="drill-card" style="flex-direction:column;align-items:center;padding:14px;cursor:pointer" onclick="showDrillPane('<div class=dash-hero><div class=dash-hero-label>Taxable Income</div><div class=hero-3d ${taxableIncome>=0?'positive':'negative'} style=font-size:36px>${fmt$(taxableIncome)}</div><div class=dash-hero-trend>Revenue − Deductions</div></div>${renderIsometricBars([{label:\\'Revenue\\',value:Math.max(1,${totalRevenue}),color:\\'#22C55E\\'},{label:\\'Deductions\\',value:Math.max(1,${totalExpenses}),color:\\'#EF4444\\'},{label:\\'Taxable\\',value:Math.max(1,${Math.abs(taxableIncome)}),color:\\'#F59E0B\\'}],90)}<div style=padding:12px;margin-top:12px;background:var(--gray-mid);border-radius:8px;font-size:11px;line-height:1.8;color:var(--gray-light)><span style=color:var(--green)>●</span> Revenue: ${fmt$(totalRevenue)}<br><span style=color:var(--red)>●</span> Deductions: ${fmt$(totalExpenses)}<br><span style=color:var(--amber)>●</span> Tax (${taxRate}%): ${fmt$(estimatedTax)}</div>')">
+        <div class="drill-card" style="flex-direction:column;align-items:center;padding:14px;cursor:pointer" onclick="showTaxIncomeDrill(${taxableIncome},${totalRevenue},${totalExpenses},${taxRate},${estimatedTax})">
           <div class="drill-label">Taxable Income</div>
           <div class="drill-value" style="color:var(--amber)">${fmt$(taxableIncome)}</div>
           <div style="font-size:8px;color:var(--gray-light);margin-top:2px">see calculation ›</div>
@@ -34417,7 +34513,10 @@ function renderVaultReports(container){
         const qTaxable = qRev - qExp;
         const qTax = Math.max(0, qTaxable * (taxRate/100));
         const isPast = qEnd < new Date();
-        return `<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px;cursor:pointer" onclick="showDrillPane('<div class=dash-hero><div class=dash-hero-label>Q${q} Tax Estimate</div><div class=hero-3d gold style=font-size:36px>${fmt$(qTax)}</div><div class=dash-hero-trend>${qStart.toLocaleDateString(\\'en\\',{month:\\'short\\'})} − ${qEnd.toLocaleDateString(\\'en\\',{month:\\'short\\'})}</div></div><div style=display:grid;grid-template-columns:1fr_1fr_1fr;gap:10px;margin:16px_0><div class=drill-card style=flex-direction:column;align-items:center;padding:10px><div class=drill-label style=font-size:8px>Q${q} Revenue</div><div class=drill-value style=color:var(--green);font-size:14px>${fmt$(qRev)}</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:10px><div class=drill-label style=font-size:8px>Q${q} Expenses</div><div class=drill-value style=color:var(--red);font-size:14px>${fmt$(qExp)}</div></div><div class=drill-card style=flex-direction:column;align-items:center;padding:10px><div class=drill-label style=font-size:8px>Taxable</div><div class=drill-value style=color:var(--amber);font-size:14px>${fmt$(qTaxable)}</div></div></div><div style=padding:12px;background:var(--gray-mid);border-radius:8px;font-size:11px;line-height:1.8;color:var(--gray-light)><span style=color:var(--amber)>●</span> ${fmt$(qTaxable)} × ${taxRate}% = ${fmt$(qTax)}<br>${isPast?\\'<span style=color:var(--cyan)>●</span> Quarter complete — verify against actuals\\':\\'<span style=color:var(--gray-light)>●</span> Estimate based on pace so far\\'}</div>')">
+        const qDateRange = qStart.toLocaleDateString('en',{month:'short'}) + ' \u2212 ' + qEnd.toLocaleDateString('en',{month:'short'});
+        const qDrillId = 'qtx_'+q;
+        setTimeout(()=>{const el=document.getElementById(qDrillId);if(el)el.onclick=()=>showQuarterTaxDrill(q,qTax,qRev,qExp,qTaxable,taxRate,isPast,qDateRange)},50);
+        return `<div class="drill-card" style="flex-direction:column;align-items:center;padding:12px;cursor:pointer" id="${qDrillId}">
           <div class="drill-label" style="font-size:10px">Q${q}</div>
           <div class="drill-value" style="color:var(--amber);font-size:16px">${fmt$(qTax)}</div>
           <div style="font-size:8px;color:${isPast?'var(--cyan)':'var(--gray-light)'};margin-top:2px">${isPast?'complete':'est'} ›</div>
