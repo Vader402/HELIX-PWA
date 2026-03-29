@@ -10306,9 +10306,171 @@ body.crossroads-active {
 .v3-muted-light{ color:var(--gray-light); opacity:0.7; }
 .v3-muted-heavy{ color:var(--gray-light); opacity:0.3; }
 
+/* ============================================
+   SECURITY LOCK SCREEN
+   ============================================ */
+.helix-lock-overlay{
+  position:fixed;top:0;left:0;width:100%;height:100%;
+  z-index:9999;background:#0a0a0a;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:opacity 0.4s ease,transform 0.4s ease;
+  font-family:'Oswald',sans-serif;
+}
+.helix-lock-overlay.lock-hidden{
+  opacity:0;pointer-events:none;transform:scale(1.05);
+}
+.helix-lock-logo{
+  width:80px;height:80px;margin-bottom:24px;
+  filter:drop-shadow(0 0 20px rgba(245,158,11,0.4));
+}
+.helix-lock-title{
+  font-size:24px;font-weight:600;color:var(--amber);
+  text-transform:uppercase;letter-spacing:0.15em;
+  margin-bottom:8px;text-shadow:0 0 12px rgba(245,158,11,0.4);
+}
+.helix-lock-subtitle{
+  font-size:12px;color:rgba(255,255,255,0.35);
+  text-transform:uppercase;letter-spacing:0.12em;margin-bottom:32px;
+}
+/* PIN display dots */
+.pin-dots{
+  display:flex;gap:12px;margin-bottom:24px;
+}
+.pin-dot{
+  width:14px;height:14px;border-radius:50%;
+  border:2px solid var(--amber);background:transparent;
+  transition:background 0.15s ease,box-shadow 0.15s ease;
+}
+.pin-dot.filled{
+  background:var(--amber);box-shadow:0 0 8px var(--amber-glow);
+}
+.pin-dot.error{
+  border-color:var(--red);background:var(--red);
+  box-shadow:0 0 8px var(--red-glow);
+}
+/* PIN keypad grid */
+.pin-keypad{
+  display:grid;grid-template-columns:repeat(3,72px);gap:10px;
+  margin-bottom:20px;
+}
+.pin-key{
+  width:72px;height:56px;border-radius:12px;
+  background:linear-gradient(165deg,#1C1C20 0%,#111113 100%);
+  border:1px solid rgba(245,158,11,0.2);
+  color:rgba(255,255,255,0.85);font-family:'Oswald',sans-serif;
+  font-size:22px;font-weight:500;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.12s ease;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.pin-key:active{
+  background:var(--amber);color:#000;
+  box-shadow:0 0 20px var(--amber-glow);transform:scale(0.95);
+}
+.pin-key.pin-key-action{
+  font-size:14px;color:var(--amber);border-color:rgba(245,158,11,0.1);
+}
+.pin-key.pin-key-action:active{
+  background:rgba(245,158,11,0.15);color:var(--amber);
+}
+/* Biometric button */
+.bio-unlock-btn{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 28px;border-radius:12px;
+  background:linear-gradient(165deg,#1C1C20 0%,#111113 100%);
+  border:1px solid rgba(245,158,11,0.25);
+  color:var(--amber);font-family:'Oswald',sans-serif;
+  font-size:14px;font-weight:500;text-transform:uppercase;
+  letter-spacing:0.1em;cursor:pointer;
+  transition:all 0.15s ease;margin-top:8px;
+}
+.bio-unlock-btn:active{
+  background:rgba(245,158,11,0.15);
+  box-shadow:0 0 20px var(--amber-glow);transform:scale(0.97);
+}
+.bio-unlock-btn svg{ width:24px;height:24px; }
+/* Lock error message */
+.lock-error{
+  font-size:12px;color:var(--red);margin-top:8px;
+  min-height:18px;text-align:center;
+  text-shadow:0 0 6px var(--red-glow);
+}
+/* Lock separator */
+.lock-divider{
+  display:flex;align-items:center;gap:12px;
+  width:220px;margin:16px 0;
+}
+.lock-divider::before,.lock-divider::after{
+  content:'';flex:1;height:1px;background:rgba(255,255,255,0.1);
+}
+.lock-divider span{
+  font-size:10px;color:rgba(255,255,255,0.25);
+  text-transform:uppercase;letter-spacing:0.1em;
+}
+/* Security settings section in settings modal */
+.security-mode-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:10px 14px;border-radius:8px;
+  background:var(--gray-dark);border:1px solid var(--gray-dark);
+  color:rgba(255,255,255,0.6);font-family:'Oswald',sans-serif;
+  font-size:13px;cursor:pointer;transition:all 0.15s ease;
+  width:100%;text-align:left;
+}
+.security-mode-btn.active{
+  border-color:var(--amber);color:var(--amber);
+  background:var(--amber-dim);
+}
+.security-mode-btn:hover{ border-color:rgba(245,158,11,0.3); }
+
 </style>
 </head>
 <body>
+
+<!-- SECURITY LOCK SCREEN — shown on load if user has enabled security -->
+<div class="helix-lock-overlay lock-hidden" id="helixLockOverlay">
+  <svg class="helix-lock-logo" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="45" fill="#0a0a0c" stroke="#F59E0B" stroke-width="4"/>
+    <circle cx="50" cy="50" r="35" fill="none" stroke="#F59E0B" stroke-width="2" opacity="0.5"/>
+    <path d="M35 65 L50 25 L65 65 M40 55 L60 55" stroke="#F59E0B" stroke-width="4" fill="none"/>
+  </svg>
+  <div class="helix-lock-title">HELIX</div>
+  <div class="helix-lock-subtitle" id="lockSubtitle">LOCKED</div>
+  <!-- PIN section (shown when mode includes pin) -->
+  <div id="lockPinSection" style="display:none;flex-direction:column;align-items:center">
+    <div class="pin-dots" id="pinDots"></div>
+    <div class="pin-keypad" id="pinKeypad">
+      <button class="pin-key" onclick="lockPinPress('1')">1</button>
+      <button class="pin-key" onclick="lockPinPress('2')">2</button>
+      <button class="pin-key" onclick="lockPinPress('3')">3</button>
+      <button class="pin-key" onclick="lockPinPress('4')">4</button>
+      <button class="pin-key" onclick="lockPinPress('5')">5</button>
+      <button class="pin-key" onclick="lockPinPress('6')">6</button>
+      <button class="pin-key" onclick="lockPinPress('7')">7</button>
+      <button class="pin-key" onclick="lockPinPress('8')">8</button>
+      <button class="pin-key" onclick="lockPinPress('9')">9</button>
+      <button class="pin-key pin-key-action" onclick="lockPinBackspace()">⌫</button>
+      <button class="pin-key" onclick="lockPinPress('0')">0</button>
+      <button class="pin-key pin-key-action" onclick="lockPinSubmit()">↵</button>
+    </div>
+  </div>
+  <!-- Divider between PIN and Biometric (shown when mode is 'both') -->
+  <div class="lock-divider" id="lockDivider" style="display:none"><span>or</span></div>
+  <!-- Biometric section (shown when mode includes biometric) -->
+  <div id="lockBioSection" style="display:none">
+    <button class="bio-unlock-btn" onclick="lockBioAuthenticate()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M12 11c0-1.1-.9-2-2-2s-2 .9-2 2c0 2.8 2 5 2 5"/>
+        <path d="M14 13c0 2-1.5 4-2 5"/>
+        <path d="M8 15c-.8-1.7-1-3.2-1-4 0-2.8 2.2-5 5-5s5 2.2 5 5c0 .8-.1 1.5-.3 2.2"/>
+        <path d="M12 4C8.1 4 5 7.1 5 11c0 1.3.3 2.5.9 3.6"/>
+        <path d="M19 11c0-3.9-3.1-7-7-7"/>
+        <path d="M3 11c0 4.4 3.6 8 8 8"/>
+      </svg>
+      Use Biometric
+    </button>
+  </div>
+  <div class="lock-error" id="lockError"></div>
+</div>
 
 <!-- FLOATING TODAY BUTTON -->
 <div class="cal-today-fab" id="calTodayFab" onclick="jumpToToday()" title="Today">
@@ -19696,6 +19858,12 @@ function openDaySettings(){
         <button class="share-gen-btn" style="background:linear-gradient(135deg,var(--cyan) 0%,#0891b2 100%);box-shadow:0 0 20px rgba(0,200,255,0.15)" onclick="this.closest('.share-avail-modal').remove();renderCloudSettings()">
           ☁ Cloud Sync Settings
         </button>
+
+        <div style="font-size:11px;color:var(--amber);text-transform:uppercase;letter-spacing:0.1em;margin:12px 0 4px">🔒 Security Lock</div>
+        <div id="securityModeButtons" style="display:flex;flex-direction:column;gap:6px">
+          ${renderSecurityModeButtons()}
+        </div>
+        <div id="securitySetupArea"></div>
 
         <p style="font-size:10px;color:rgba(255,255,255,0.2);text-align:center;margin-top:12px">
           ⌘K = Search • 1-4 = Panels • N = New • Esc = Close
@@ -56245,6 +56413,392 @@ function saveQuestProgress(id){
 // ============================================
 
 // ============================================
+// SECURITY LOCK SYSTEM
+// ============================================
+// Supports: none (default), pin, biometric, both
+// PIN stored as SHA-256 hash. Biometric via WebAuthn.
+// Grace period: 5 minutes of inactivity before re-lock.
+
+const LOCK_GRACE_MS = 5 * 60 * 1000; // 5 minutes
+
+// --- SHA-256 hashing via SubtleCrypto ---
+async function hashPIN(pin){
+  const enc = new TextEncoder().encode(pin);
+  const buf = await crypto.subtle.digest('SHA-256', enc);
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// --- Security mode helpers ---
+function getSecurityMode(){
+  return localStorage.getItem('helix_security_mode') || 'none';
+}
+function setSecurityMode(mode){
+  localStorage.setItem('helix_security_mode', mode);
+}
+function getLastActive(){
+  return parseInt(localStorage.getItem('helix_last_active') || '0', 10);
+}
+function setLastActive(){
+  localStorage.setItem('helix_last_active', Date.now().toString());
+}
+function isGracePeriodValid(){
+  return (Date.now() - getLastActive()) < LOCK_GRACE_MS;
+}
+function isWebAuthnAvailable(){
+  return !!(window.PublicKeyCredential &&
+    (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1'));
+}
+
+// --- Lock screen state ---
+let _lockPinBuffer = '';
+let _lockPinLength = 4; // detect from stored hash length context; default 4
+
+// Show lock screen if security is enabled and grace period expired
+function checkAndShowLock(){
+  const mode = getSecurityMode();
+  if(mode === 'none') return; // No security — app loads normally
+  if(isGracePeriodValid()) return; // Recently active — skip lock
+
+  showLockScreen(mode);
+}
+
+function showLockScreen(mode){
+  const overlay = document.getElementById('helixLockOverlay');
+  if(!overlay) return;
+
+  const pinSection = document.getElementById('lockPinSection');
+  const bioSection = document.getElementById('lockBioSection');
+  const divider = document.getElementById('lockDivider');
+  const errorEl = document.getElementById('lockError');
+
+  // Reset state
+  _lockPinBuffer = '';
+  if(errorEl) errorEl.textContent = '';
+
+  // Determine what to show
+  const showPin = (mode === 'pin' || mode === 'both');
+  const showBio = (mode === 'biometric' || mode === 'both') && isWebAuthnAvailable();
+
+  pinSection.style.display = showPin ? 'flex' : 'none';
+  bioSection.style.display = showBio ? 'block' : 'none';
+  divider.style.display = (showPin && showBio) ? 'flex' : 'none';
+
+  // If mode includes biometric but WebAuthn not available, show message
+  if((mode === 'biometric' || mode === 'both') && !isWebAuthnAvailable()){
+    if(mode === 'biometric'){
+      // Can't unlock at all with biometric only on non-HTTPS — fallback: unlock
+      setLastActive();
+      return;
+    }
+    // mode=both: just hide bio, user uses PIN
+  }
+
+  // Build PIN dots (detect length from stored hash — default 4)
+  if(showPin) renderPinDots();
+
+  // Show overlay
+  overlay.classList.remove('lock-hidden');
+}
+
+function renderPinDots(){
+  const dotsEl = document.getElementById('pinDots');
+  if(!dotsEl) return;
+  // We don't know the PIN length, so show 6 dots max; filled based on buffer
+  const maxDots = 6;
+  let html = '';
+  for(let i = 0; i < maxDots; i++){
+    const filled = i < _lockPinBuffer.length ? ' filled' : '';
+    html += '<div class="pin-dot' + filled + '"></div>';
+  }
+  dotsEl.innerHTML = html;
+}
+
+function lockPinPress(digit){
+  if(_lockPinBuffer.length >= 6) return;
+  _lockPinBuffer += digit;
+  renderPinDots();
+  // Auto-submit at 4 or 6 digits
+  if(_lockPinBuffer.length === 4 || _lockPinBuffer.length === 6){
+    lockPinSubmit();
+  }
+}
+
+function lockPinBackspace(){
+  if(_lockPinBuffer.length === 0) return;
+  _lockPinBuffer = _lockPinBuffer.slice(0, -1);
+  renderPinDots();
+  document.getElementById('lockError').textContent = '';
+}
+
+async function lockPinSubmit(){
+  if(_lockPinBuffer.length < 4) return;
+  const hash = await hashPIN(_lockPinBuffer);
+  const stored = localStorage.getItem('helix_pin_hash');
+
+  if(hash === stored){
+    unlockApp();
+  } else {
+    // Show error, shake dots
+    const dotsEl = document.getElementById('pinDots');
+    if(dotsEl){
+      dotsEl.querySelectorAll('.pin-dot').forEach(d => {
+        d.classList.remove('filled');
+        d.classList.add('error');
+      });
+    }
+    document.getElementById('lockError').textContent = 'Incorrect PIN';
+    _lockPinBuffer = '';
+    setTimeout(() => {
+      renderPinDots();
+    }, 600);
+  }
+}
+
+// --- WebAuthn / Biometric ---
+async function registerBiometric(){
+  if(!isWebAuthnAvailable()){
+    toast('Biometric requires HTTPS or localhost');
+    return false;
+  }
+  try {
+    const userId = new Uint8Array(16);
+    crypto.getRandomValues(userId);
+
+    const credential = await navigator.credentials.create({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rp: { name: 'Helix', id: location.hostname },
+        user: {
+          id: userId,
+          name: 'helix-user',
+          displayName: 'Helix User'
+        },
+        pubKeyCredParams: [
+          { type: 'public-key', alg: -7 },   // ES256
+          { type: 'public-key', alg: -257 }  // RS256
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform',
+          userVerification: 'required'
+        },
+        timeout: 60000,
+        attestation: 'none'
+      }
+    });
+
+    if(credential && credential.rawId){
+      // Store credential ID as base64
+      const credId = btoa(String.fromCharCode(...new Uint8Array(credential.rawId)));
+      localStorage.setItem('helix_webauthn_cred', credId);
+      return true;
+    }
+    return false;
+  } catch(e){
+    console.warn('WebAuthn registration failed:', e);
+    return false;
+  }
+}
+
+async function lockBioAuthenticate(){
+  const credIdB64 = localStorage.getItem('helix_webauthn_cred');
+  if(!credIdB64){
+    document.getElementById('lockError').textContent = 'No biometric registered';
+    return;
+  }
+  try {
+    const credIdRaw = Uint8Array.from(atob(credIdB64), c => c.charCodeAt(0));
+    const assertion = await navigator.credentials.get({
+      publicKey: {
+        challenge: crypto.getRandomValues(new Uint8Array(32)),
+        rpId: location.hostname,
+        allowCredentials: [{
+          type: 'public-key',
+          id: credIdRaw,
+          transports: ['internal']
+        }],
+        userVerification: 'required',
+        timeout: 60000
+      }
+    });
+    if(assertion){
+      unlockApp();
+    }
+  } catch(e){
+    console.warn('WebAuthn auth failed:', e);
+    document.getElementById('lockError').textContent = 'Biometric failed — try again';
+  }
+}
+
+function unlockApp(){
+  setLastActive();
+  const overlay = document.getElementById('helixLockOverlay');
+  if(overlay){
+    overlay.classList.add('lock-hidden');
+  }
+}
+
+// --- Re-lock on visibility change ---
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden'){
+    // Stamp last active when leaving
+    if(getSecurityMode() !== 'none') setLastActive();
+  }
+  if(document.visibilityState === 'visible'){
+    // Check if we need to re-lock
+    checkAndShowLock();
+  }
+});
+
+// --- Keep last-active fresh while user interacts ---
+let _lastActiveTimer = null;
+function startActivityTracker(){
+  const update = () => {
+    if(getSecurityMode() !== 'none') setLastActive();
+  };
+  ['click','touchstart','keydown','scroll'].forEach(evt => {
+    document.addEventListener(evt, () => {
+      if(!_lastActiveTimer){
+        _lastActiveTimer = setTimeout(() => {
+          update();
+          _lastActiveTimer = null;
+        }, 10000); // Throttle: update at most every 10s
+      }
+    }, { passive: true });
+  });
+}
+startActivityTracker();
+
+// --- Security Settings UI (rendered inside settings modal) ---
+function renderSecurityModeButtons(){
+  const mode = getSecurityMode();
+  const bioAvail = isWebAuthnAvailable();
+  const modes = [
+    { val:'none', label:'None', icon:'🔓', desc:'No lock screen' },
+    { val:'pin', label:'PIN', icon:'🔢', desc:'4-6 digit code' },
+    { val:'biometric', label:'Biometric', icon:'👆', desc:bioAvail ? 'Fingerprint / Face' : 'Requires HTTPS' },
+    { val:'both', label:'PIN + Bio', icon:'🛡', desc:'Maximum security' }
+  ];
+  return modes.map(m => {
+    const active = mode === m.val ? ' active' : '';
+    const disabled = (!bioAvail && (m.val === 'biometric' || m.val === 'both')) ? ' style="opacity:0.35;pointer-events:none"' : '';
+    return `<button class="security-mode-btn${active}"${disabled} onclick="selectSecurityMode('${m.val}')">
+      <span style="font-size:18px">${m.icon}</span>
+      <div style="flex:1;text-align:left">
+        <div style="font-weight:500">${m.label}</div>
+        <div style="font-size:10px;opacity:0.5;font-family:Inter,sans-serif">${m.desc}</div>
+      </div>
+      ${active ? '<span style="color:var(--amber);font-size:14px">●</span>' : ''}
+    </button>`;
+  }).join('');
+}
+
+async function selectSecurityMode(newMode){
+  const oldMode = getSecurityMode();
+  const setupArea = document.getElementById('securitySetupArea');
+  const btnContainer = document.getElementById('securityModeButtons');
+
+  if(newMode === 'none'){
+    // Clear everything
+    setSecurityMode('none');
+    localStorage.removeItem('helix_pin_hash');
+    localStorage.removeItem('helix_webauthn_cred');
+    if(btnContainer) btnContainer.innerHTML = renderSecurityModeButtons();
+    if(setupArea) setupArea.innerHTML = '<div style="padding:8px;font-size:11px;color:var(--green);text-align:center">Security disabled</div>';
+    toast('Security lock disabled');
+    return;
+  }
+
+  if(newMode === 'pin' || newMode === 'both'){
+    // Show PIN setup
+    showPinSetup(newMode);
+    return;
+  }
+
+  if(newMode === 'biometric'){
+    if(setupArea) setupArea.innerHTML = '<div style="padding:12px;text-align:center;color:rgba(255,255,255,0.5);font-size:12px">Registering biometric...</div>';
+    const ok = await registerBiometric();
+    if(ok){
+      setSecurityMode('biometric');
+      if(btnContainer) btnContainer.innerHTML = renderSecurityModeButtons();
+      if(setupArea) setupArea.innerHTML = '<div style="padding:8px;font-size:11px;color:var(--green);text-align:center">Biometric registered</div>';
+      toast('Biometric lock enabled');
+    } else {
+      if(setupArea) setupArea.innerHTML = '<div style="padding:8px;font-size:11px;color:var(--red);text-align:center">Biometric registration failed</div>';
+    }
+  }
+}
+
+function showPinSetup(targetMode){
+  const setupArea = document.getElementById('securitySetupArea');
+  if(!setupArea) return;
+
+  setupArea.innerHTML = `
+    <div style="padding:12px;border-radius:8px;background:var(--gray-dark);border:1px solid var(--amber);margin-top:8px">
+      <div style="font-size:11px;color:var(--amber);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Set Your PIN (4-6 digits)</div>
+      <input type="password" id="secPinInput1" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Enter PIN"
+        style="width:100%;padding:10px;border-radius:6px;background:#111;border:1px solid rgba(245,158,11,0.3);color:var(--amber);font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:0.3em;text-align:center;box-sizing:border-box;margin-bottom:8px">
+      <input type="password" id="secPinInput2" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Confirm PIN"
+        style="width:100%;padding:10px;border-radius:6px;background:#111;border:1px solid rgba(245,158,11,0.3);color:var(--amber);font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:0.3em;text-align:center;box-sizing:border-box;margin-bottom:8px">
+      <div id="pinSetupError" style="font-size:11px;color:var(--red);min-height:16px;text-align:center;margin-bottom:8px"></div>
+      <div style="display:flex;gap:8px">
+        <button class="share-gen-btn" style="flex:1;background:#374151;margin:0" onclick="cancelPinSetup()">Cancel</button>
+        <button class="share-gen-btn" style="flex:1;margin:0" onclick="confirmPinSetup('${targetMode}')">Set PIN</button>
+      </div>
+    </div>
+  `;
+  // Focus first input
+  setTimeout(() => document.getElementById('secPinInput1')?.focus(), 100);
+}
+
+function cancelPinSetup(){
+  const setupArea = document.getElementById('securitySetupArea');
+  if(setupArea) setupArea.innerHTML = '';
+}
+
+async function confirmPinSetup(targetMode){
+  const pin1 = document.getElementById('secPinInput1')?.value || '';
+  const pin2 = document.getElementById('secPinInput2')?.value || '';
+  const errEl = document.getElementById('pinSetupError');
+
+  if(pin1.length < 4){ if(errEl) errEl.textContent = 'PIN must be at least 4 digits'; return; }
+  if(pin1.length > 6){ if(errEl) errEl.textContent = 'PIN must be 6 digits max'; return; }
+  if(!/^\d+$/.test(pin1)){ if(errEl) errEl.textContent = 'PIN must be numbers only'; return; }
+  if(pin1 !== pin2){ if(errEl) errEl.textContent = 'PINs do not match'; return; }
+
+  // Hash and store
+  const hash = await hashPIN(pin1);
+  localStorage.setItem('helix_pin_hash', hash);
+
+  // If target mode includes biometric, register that too
+  if(targetMode === 'both'){
+    const ok = await registerBiometric();
+    if(!ok){
+      if(errEl) errEl.textContent = 'Biometric failed — PIN saved, using PIN only';
+      setSecurityMode('pin');
+      const btnContainer = document.getElementById('securityModeButtons');
+      if(btnContainer) btnContainer.innerHTML = renderSecurityModeButtons();
+      toast('PIN lock enabled (biometric unavailable)');
+      cancelPinSetup();
+      return;
+    }
+  }
+
+  setSecurityMode(targetMode);
+  const btnContainer = document.getElementById('securityModeButtons');
+  if(btnContainer) btnContainer.innerHTML = renderSecurityModeButtons();
+  const setupArea = document.getElementById('securitySetupArea');
+  if(setupArea) setupArea.innerHTML = '<div style="padding:8px;font-size:11px;color:var(--green);text-align:center">' +
+    (targetMode === 'both' ? 'PIN + Biometric enabled' : 'PIN lock enabled') + '</div>';
+  toast(targetMode === 'both' ? 'PIN + Biometric lock enabled' : 'PIN lock enabled');
+}
+
+// --- Check lock on initial page load ---
+// (called after INIT below)
+function initSecurityLock(){
+  checkAndShowLock();
+}
+
+// ============================================
 // INIT
 // ============================================
 load();
@@ -56259,6 +56813,9 @@ if(localStorage.getItem('helix_session')) startPeriodicSync();
 if(typeof checkNoteReminders === 'function'){
   setTimeout(checkNoteReminders, 1000);
 }
+
+// Initialize security lock (checks mode + grace period on page load)
+initSecurityLock();
 
 // Add demo events if none exist (for mockup testing)
 if(S.events.length===0){
