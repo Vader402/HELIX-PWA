@@ -309,7 +309,7 @@ body{font-family:'Inter',sans-serif;background:var(--black-pure);color:var(--whi
   right:20px;
   top:50%;
   transform:translateY(-50%);
-  height:160px;
+  height:128px;
   overflow-y:auto;
   overflow-x:hidden;
   scroll-snap-type:y mandatory;
@@ -11081,22 +11081,6 @@ body.crossroads-active {
   </div>
 </div>
 
-<!-- PRODUCTION PANEL -->
-<div class="panel" id="panel-production">
-  <div class="panel-hdr">
-    <span class="panel-title red">🏭 PRODUCTION</span>
-    <button class="panel-close" onclick="closePanel()">✕</button>
-  </div>
-  <div class="stats-bar">
-    <div class="st"><div class="st-v">40</div><div class="st-l">Target</div></div>
-    <div class="st"><div class="st-v" id="prodMade">0</div><div class="st-l">Made</div></div>
-    <div class="st"><div class="st-v" id="prodLeft">40</div><div class="st-l">Left</div></div>
-  </div>
-  <div class="panel-body" id="prodBody"></div>
-  <div style="padding:12px;border-top:1px solid var(--gray-faint)">
-    <button class="p-btn primary" style="width:100%" onclick="scheduleProduction()">📅 Schedule 2-6pm Block</button>
-  </div>
-</div>
 
 <!-- TASKS PANEL - Connect-style design -->
 <div class="panel" id="panel-missions">
@@ -11251,78 +11235,7 @@ body.crossroads-active {
   <div class="panel-body" id="waresBody"></div>
 </div>
 
-<!-- BEANS PANEL -->
-<div class="panel" id="panel-beans">
-  <div class="panel-hdr">
-    <span class="panel-title orange">☕ BEANS</span>
-    <button class="panel-close" onclick="closePanel()">✕</button>
-  </div>
-  <div class="stats-bar">
-    <div class="st"><div class="st-v" id="beansSubs">0</div><div class="st-l">Subscribers</div></div>
-    <div class="st"><div class="st-v" id="beansMRR">$0</div><div class="st-l">MRR</div></div>
-    <div class="st"><div class="st-v" id="beansGoal">30</div><div class="st-l">Goal</div></div>
-  </div>
-  <div class="panel-body" id="beansBody"></div>
-  <div style="padding:12px;border-top:1px solid var(--gray-faint)">
-    <a href="https://dripshipper.com" target="_blank" class="p-btn primary" style="display:block;text-align:center;text-decoration:none">Open DripShipper →</a>
-  </div>
-</div>
 
-<!-- STREAMS PANEL -->
-<div class="panel" id="panel-streams">
-  <div class="panel-hdr">
-    <span class="panel-title pink">📊 STREAMS</span>
-    <button class="panel-close" onclick="closePanel()">✕</button>
-  </div>
-  <div class="panel-body" id="streamsBody"></div>
-</div>
-
-<!-- INVENTORY PANEL - Now includes Production tab -->
-<div class="panel" id="panel-flavors">
-  <div class="panel-hdr" style="padding:6px 12px;border-bottom:none">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div style="width:36px;height:36px;display:flex;align-items:center;justify-content:center">
-        <svg viewBox="0 0 24 24" fill="none" stroke="var(--lime)" stroke-width="1.8" style="width:32px;height:32px;filter:drop-shadow(0 0 8px var(--lime-glow))">
-          <circle cx="12" cy="12" r="10"/>
-          <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
-          <line x1="9" y1="9" x2="9.01" y2="9"/>
-          <line x1="15" y1="9" x2="15.01" y2="9"/>
-        </svg>
-      </div>
-      <span class="panel-title lime sm">STOCK</span>
-    </div>
-    <button class="panel-close" onclick="closePanel()">✕</button>
-  </div>
-  
-  <!-- Tabs: Inventory / Production -->
-  <div class="task-tabs">
-    <button class="task-tab active" id="tabInventory" onclick="showStockTab('inventory')">Inventory</button>
-    <button class="task-tab" id="tabProduction" onclick="showStockTab('production')">Production</button>
-  </div>
-  
-  <!-- Inventory view -->
-  <div class="task-view" id="viewInventory">
-    <div class="stats-bar">
-      <div class="st"><div class="st-v" id="invTotal">0</div><div class="st-l">Barrels</div></div>
-      <div class="st"><div class="st-v" id="invLow" style="color:var(--red)">0</div><div class="st-l">Low Stock</div></div>
-      <div class="st"><div class="st-v">16</div><div class="st-l">Flavors</div></div>
-    </div>
-    <div class="panel-body" id="flavorsBody"></div>
-  </div>
-  
-  <!-- Production view -->
-  <div class="task-view hidden" id="viewProduction">
-    <div class="stats-bar">
-      <div class="st"><div class="st-v">40</div><div class="st-l">Target</div></div>
-      <div class="st"><div class="st-v" id="prodMade2">0</div><div class="st-l">Made</div></div>
-      <div class="st"><div class="st-v" id="prodLeft2">40</div><div class="st-l">Left</div></div>
-    </div>
-    <div class="panel-body" id="prodBody2"></div>
-    <div style="padding:12px;border-top:1px solid var(--gray-faint)">
-      <button class="p-btn primary" style="width:100%" onclick="scheduleProduction()">📅 Schedule 2-6pm Block</button>
-    </div>
-  </div>
-</div>
 
 <!-- NOTES PANEL - Red accent, split layout with wheel -->
 <div class="panel" id="panel-notes">
@@ -17875,9 +17788,7 @@ function updStats(){
   }
   
   if(sV) sV.textContent=S.visits+'/3';
-  let b=0;for(let k in S.production)b+=S.production[k]||0;
-  if(sB) sB.textContent=b;
-  
+
   // Update orbital button badges for at-a-glance info
   updateOrbitalBadges();
 }
@@ -17903,13 +17814,6 @@ function updateOrbitalBadges(){
     misBtn.classList.toggle('urgent',remaining<=2&&remaining>0);
   }
   
-  // Production: scheduled today
-  const prodToday=S.events.filter(e=>e.date===today&&e.type==='production').length;
-  const prdBtn=document.getElementById('bPrd');
-  if(prdBtn){
-    prdBtn.classList.toggle('notify',prodToday>0);
-  }
-  
   // Email/Connect: prospects needing contact
   const needsEmail=S.prospects.filter(p=>{
     if(p.status==='closed'||p.status==='dead')return false;
@@ -17923,13 +17827,6 @@ function updateOrbitalBadges(){
     emlBtn.classList.toggle('urgent',needsEmail>5);
   }
   
-  // Inventory/Flavors: low stock
-  const lowStock=Object.entries(S.inventory||{}).filter(([k,v])=>v<=2&&v>0).length;
-  const flvBtn=document.getElementById('bFlv');
-  if(flvBtn){
-    flvBtn.classList.toggle('notify',lowStock>0);
-    flvBtn.classList.toggle('urgent',lowStock>3);
-  }
 }
 
 function updOrbital(){
@@ -18188,11 +18085,6 @@ function openPanel(name, addToHistory=true){
     if(typeof cancelCrossroads === 'function') cancelCrossroads();
   }
 
-  // Redirect production to flavors panel with production tab
-  if(name === 'production'){
-    name = 'flavors';
-    setTimeout(() => showStockTab('production'), 50);
-  }
   // Redirect contacts and personals to CRM tabs
   if(name === 'contacts'){
     name = 'crm';
@@ -18242,12 +18134,6 @@ function openPanel(name, addToHistory=true){
     else renderMissions();
   }
   if(name==='wares')renderWares();
-  if(name==='flavors'){
-    if(stockTab==='production') renderProd();
-    else renderFlavors();
-  }
-  if(name==='beans')renderBeans();
-  if(name==='streams')renderStreams();
   if(name==='notes')renderNotes();
   
   // Layer 2
@@ -28787,7 +28673,33 @@ function renderReport_pnlByClient(container){
   container.innerHTML = html;
   requestAnimationFrame(function(){var items=container.querySelectorAll('.drill-card,.dash-hero');items.forEach(function(el,i){el.style.opacity='0';el.style.transform='translateY(8px)';el.style.animation='helixAppear 0.3s cubic-bezier(0.16,1,0.3,1) '+i*0.04+'s forwards';});});
 }
-function exportPnlByClientReport(mode){if(mode==='csv')exportReportCSV('PnL-by-Client',['Client','Revenue','Expenses','Profit'],[]);else exportReportClipboard('P&L BY CLIENT\n');}
+function exportPnlByClientReport(mode){
+  var period=window._pnlClientPeriod||'this-year';
+  var p=_reportPeriodDates(period);
+  var clients={};
+  (S.invoices||[]).filter(function(i){return i.status==='paid'&&i.paidAt&&new Date(i.paidAt)>=p.start&&new Date(i.paidAt)<=p.end;}).forEach(function(inv){
+    var client=(S.prospects||[]).find(function(c){return c.id===inv.clientId;});
+    var name=client?(client.biz||client.name):'Unknown';
+    if(!clients[name])clients[name]={revenue:0,expenses:0};
+    clients[name].revenue+=(inv.total||0);
+  });
+  (S.expenses||[]).filter(function(e){var d=new Date(e.date);return d>=p.start&&d<=p.end&&e.jobId;}).forEach(function(e){
+    var job=(S.jobs||[]).find(function(j){return j.id===e.jobId;});
+    if(!job)return;
+    var client=(S.prospects||[]).find(function(c){return c.id===job.clientId;});
+    var name=client?(client.biz||client.name):'Unknown';
+    if(!clients[name])clients[name]={revenue:0,expenses:0};
+    clients[name].expenses+=(e.amount||0);
+  });
+  var rows=Object.entries(clients).map(function(pair){return {name:pair[0],revenue:pair[1].revenue,expenses:pair[1].expenses,profit:pair[1].revenue-pair[1].expenses};}).sort(function(a,b){return b.profit-a.profit;});
+  if(mode==='csv'){
+    exportReportCSV('PnL-by-Client',['Client','Revenue','Expenses','Profit'],rows.map(function(r){return [r.name,r.revenue.toFixed(2),r.expenses.toFixed(2),r.profit.toFixed(2)];}));
+  } else {
+    var text='P&L BY CLIENT · '+p.label+'\n'+'═'.repeat(40)+'\n';
+    rows.forEach(function(r){text+=r.name+' | Rev: $'+r.revenue.toFixed(2)+' | Exp: $'+r.expenses.toFixed(2)+' | Profit: $'+r.profit.toFixed(2)+'\n';});
+    exportReportClipboard(text);
+  }
+}
 
 // RPT: Customer balance summary
 function renderReport_customerBalances(container){
@@ -28801,9 +28713,27 @@ function renderReport_customerBalances(container){
   var totalBal = rows.reduce(function(s,r){return s+r.balance;},0);
   var html = _reportBackBtn();
   html += '<div class="dash-hero"><div class="dash-hero-label">Customer Balances</div><div class="dash-hero-value hero-3d negative helix-count-glow" style="font-size:42px">'+fmt$(totalBal)+'</div><div class="dash-hero-trend">'+rows.length+' client'+(rows.length!==1?'s':'')+' with balance due</div></div>';
+  html += _reportExportBtns('exportCustomerBalancesReport');
   rows.forEach(function(r){html+='<div class="drill-card" style="border-left:3px solid var(--amber);padding:10px 14px;cursor:pointer" onclick="drillToClient(\''+r.clientId+'\')" onmouseover="this.style.background=\'rgba(255,255,255,0.03)\'" onmouseout="this.style.background=\'\'"><div style="flex:1"><div style="font-size:13px;color:var(--white)">'+esc(r.name)+'</div><div style="font-size:9px;color:var(--gray-light)">Invoiced: '+fmt$(r.total)+' · Paid: '+fmt$(r.paid)+'</div></div><div style="display:flex;align-items:center;gap:6px"><div style="font-family:JetBrains Mono;font-size:14px;color:var(--amber);font-weight:700">'+fmt$(r.balance)+'</div><span style="color:var(--amber);font-size:10px">›</span></div></div>';});
   container.innerHTML = html;
   requestAnimationFrame(function(){var items=container.querySelectorAll('.drill-card,.dash-hero');items.forEach(function(el,i){el.style.opacity='0';el.style.transform='translateY(8px)';el.style.animation='helixAppear 0.3s cubic-bezier(0.16,1,0.3,1) '+i*0.04+'s forwards';});});
+}
+function exportCustomerBalancesReport(mode){
+  var clients=(S.prospects||[]).filter(function(p){return (S.invoices||[]).some(function(i){return i.clientId===p.id;});});
+  var rows=clients.map(function(c){
+    var invs=(S.invoices||[]).filter(function(i){return i.clientId===c.id&&(i.type||'invoice')==='invoice';});
+    var total=invs.reduce(function(s,i){return s+(i.total||0);},0);
+    var paid=invs.reduce(function(s,i){return s+(i.amountPaid||0);},0);
+    return {name:c.biz||c.name||'',total:total,paid:paid,balance:total-paid};
+  }).filter(function(r){return r.balance>0.01;}).sort(function(a,b){return b.balance-a.balance;});
+  if(mode==='csv'){
+    exportReportCSV('Customer-Balances',['Client','Invoiced','Paid','Balance'],rows.map(function(r){return [r.name,r.total.toFixed(2),r.paid.toFixed(2),r.balance.toFixed(2)];}));
+  } else {
+    var text='CUSTOMER BALANCES\n'+'═'.repeat(40)+'\n';
+    rows.forEach(function(r){text+=r.name+' | Invoiced: $'+r.total.toFixed(2)+' | Paid: $'+r.paid.toFixed(2)+' | Balance: $'+r.balance.toFixed(2)+'\n';});
+    text+='─'.repeat(40)+'\nTOTAL: $'+rows.reduce(function(s,r){return s+r.balance;},0).toFixed(2)+'\n';
+    exportReportClipboard(text);
+  }
 }
 
 // RPT: Mileage report
@@ -28813,9 +28743,21 @@ function renderReport_mileage(container){
   var totalAmount = mileageExps.reduce(function(s,e){return s+(e.amount||0);},0);
   var html = _reportBackBtn();
   html += '<div class="dash-hero"><div class="dash-hero-label">Mileage Report</div><div class="dash-hero-value hero-3d positive helix-count-glow" style="font-size:42px">'+fmt$(totalAmount)+'</div><div class="dash-hero-trend">'+totalMiles.toFixed(0)+' miles · '+mileageExps.length+' trips</div></div>';
+  html += _reportExportBtns('exportMileageReport');
   mileageExps.forEach(function(e){html+='<div class="drill-card" style="cursor:pointer" onclick="openExpenseModal(\''+e.id+'\')" onmouseover="this.style.background=\'rgba(255,255,255,0.03)\'" onmouseout="this.style.background=\'\'"><div style="flex:1"><div class="drill-label">'+esc(e.description||e.vendor||'Trip')+'</div><div style="font-size:9px;color:var(--gray-light)">'+(e.date||'')+'</div></div><div style="display:flex;align-items:center;gap:6px"><div class="drill-value" style="color:var(--green)">'+fmt$(e.amount||0)+'</div><span style="color:var(--amber);font-size:10px">›</span></div></div>';});
   container.innerHTML = html;
   requestAnimationFrame(function(){var items=container.querySelectorAll('.drill-card,.dash-hero');items.forEach(function(el,i){el.style.opacity='0';el.style.transform='translateY(8px)';el.style.animation='helixAppear 0.3s cubic-bezier(0.16,1,0.3,1) '+i*0.04+'s forwards';});});
+}
+function exportMileageReport(mode){
+  var mileageExps=(S.expenses||[]).filter(function(e){return e.category==='mileage';}).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  if(mode==='csv'){
+    exportReportCSV('Mileage',['Date','Description','Miles','Amount'],mileageExps.map(function(e){return [e.date||'',e.description||e.vendor||'Trip',(e.miles||0).toFixed(1),(e.amount||0).toFixed(2)];}));
+  } else {
+    var text='MILEAGE REPORT\n'+'═'.repeat(40)+'\n';
+    mileageExps.forEach(function(e){text+=(e.date||'')+' | '+(e.description||e.vendor||'Trip')+' | '+(e.miles||0).toFixed(1)+' mi | $'+(e.amount||0).toFixed(2)+'\n';});
+    text+='─'.repeat(40)+'\nTOTAL: '+mileageExps.reduce(function(s,e){return s+(e.miles||0);},0).toFixed(0)+' miles · $'+mileageExps.reduce(function(s,e){return s+(e.amount||0);},0).toFixed(2)+'\n';
+    exportReportClipboard(text);
+  }
 }
 
 // RPT: Time & billing summary
@@ -28826,12 +28768,29 @@ function renderReport_timeBilling(container){
   var totalValue = entries.reduce(function(s,e){var hours=(e.duration||0)/3600000;return s+hours*(e.rate||0);},0);
   var html = _reportBackBtn();
   html += '<div class="dash-hero"><div class="dash-hero-label">Time & Billing Summary</div><div class="dash-hero-value hero-3d positive helix-count-glow" style="font-size:42px">'+fmt$(totalValue)+'</div><div class="dash-hero-trend">'+totalHours.toFixed(1)+' total hrs · '+billableHours.toFixed(1)+' billable</div></div>';
+  html += _reportExportBtns('exportTimeBillingReport');
   // Group by client
   var byClient = {};
   entries.forEach(function(e){var job=(S.jobs||[]).find(function(j){return j.id===e.jobId;});var client=job?(S.prospects||[]).find(function(p){return p.id===job.clientId;}):null;var name=client?(client.biz||client.name):'Unassigned';if(!byClient[name])byClient[name]={hours:0,value:0,clientId:client?client.id:null};var h=(e.duration||0)/3600000;byClient[name].hours+=h;byClient[name].value+=h*(e.rate||0);});
   Object.entries(byClient).sort(function(a,b){return b[1].value-a[1].value;}).forEach(function(pair){var cid=pair[1].clientId;html+='<div class="drill-card" style="border-left:3px solid var(--cyan);padding:10px 14px;cursor:pointer" '+(cid?'onclick="drillToClient(\''+cid+'\')"':'')+' onmouseover="this.style.background=\'rgba(255,255,255,0.03)\'" onmouseout="this.style.background=\'\'"><div style="flex:1"><div style="font-size:13px;color:var(--white)">'+esc(pair[0])+'</div><div style="font-size:9px;color:var(--gray-light)">'+pair[1].hours.toFixed(1)+' hours</div></div><div style="display:flex;align-items:center;gap:6px"><div style="font-family:JetBrains Mono;font-size:14px;color:var(--green)">'+fmt$(pair[1].value)+'</div><span style="color:var(--amber);font-size:10px">›</span></div></div>';});
   container.innerHTML = html;
   requestAnimationFrame(function(){var items=container.querySelectorAll('.drill-card,.dash-hero');items.forEach(function(el,i){el.style.opacity='0';el.style.transform='translateY(8px)';el.style.animation='helixAppear 0.3s cubic-bezier(0.16,1,0.3,1) '+i*0.04+'s forwards';});});
+}
+function exportTimeBillingReport(mode){
+  var entries=(S.timeEntries||[]).sort(function(a,b){return new Date(b.startTime||b.date||0)-new Date(a.startTime||a.date||0);});
+  var byClient={};
+  entries.forEach(function(e){var job=(S.jobs||[]).find(function(j){return j.id===e.jobId;});var client=job?(S.prospects||[]).find(function(p){return p.id===job.clientId;}):null;var name=client?(client.biz||client.name):'Unassigned';if(!byClient[name])byClient[name]={hours:0,value:0};var h=(e.duration||0)/3600000;byClient[name].hours+=h;byClient[name].value+=h*(e.rate||0);});
+  var rows=Object.entries(byClient).sort(function(a,b){return b[1].value-a[1].value;});
+  if(mode==='csv'){
+    exportReportCSV('Time-Billing',['Client','Hours','Value'],rows.map(function(r){return [r[0],r[1].hours.toFixed(1),r[1].value.toFixed(2)];}));
+  } else {
+    var totalHours=entries.reduce(function(s,e){return s+(e.duration||0);},0)/3600000;
+    var totalValue=entries.reduce(function(s,e){return s+((e.duration||0)/3600000)*(e.rate||0);},0);
+    var text='TIME & BILLING SUMMARY\n'+'═'.repeat(40)+'\n';
+    rows.forEach(function(r){text+=r[0]+' | '+r[1].hours.toFixed(1)+' hrs | $'+r[1].value.toFixed(2)+'\n';});
+    text+='─'.repeat(40)+'\nTOTAL: '+totalHours.toFixed(1)+' hrs · $'+totalValue.toFixed(2)+'\n';
+    exportReportClipboard(text);
+  }
 }
 
 // ============================================
@@ -36107,8 +36066,29 @@ function renderReport_apaging(container){
   requestAnimationFrame(function(){var items=container.querySelectorAll('.drill-card,.glass-card,.dash-hero');items.forEach(function(el,i){el.style.opacity='0';el.style.transform='translateY(8px)';el.style.animation='helixAppear 0.3s cubic-bezier(0.16,1,0.3,1) '+i*0.04+'s forwards';});});
 }
 function exportAPAgingReport(mode){
-  if(mode==='csv') exportReportCSV('AP-Aging',['Vendor','Amount','Status'],[]);
-  else exportReportClipboard('AP AGING REPORT\n');
+  var budget=(S.budgets||[])[0];
+  var bills=(budget?budget.bills||[]:[]).filter(function(b){return !b.paidThisMonth;});
+  var now=new Date();
+  var payables=bills.map(function(b){
+    var dueDate=new Date(now.getFullYear(),now.getMonth(),b.dueDay||1);
+    if(dueDate<now) dueDate=new Date(now.getFullYear(),now.getMonth()+1,b.dueDay||1);
+    var daysOver=Math.max(0,Math.floor((now-dueDate)/86400000));
+    return {name:b.name,amount:b.amount||0,daysOver:daysOver};
+  });
+  (S.expenses||[]).filter(function(e){return e.status==='unpaid'||e.paid===false;}).forEach(function(e){
+    var due=e.dueDate?new Date(e.dueDate):new Date(e.date);
+    var days=Math.max(0,Math.floor((now-due)/86400000));
+    payables.push({name:e.vendor||e.description||'Expense',amount:e.amount||0,daysOver:days});
+  });
+  function agingBucket(days){return days<=0?'Current':days<=30?'1-30 Days':days<=60?'31-60 Days':days<=90?'61-90 Days':'90+ Days';}
+  if(mode==='csv'){
+    exportReportCSV('AP-Aging',['Vendor','Amount','Days Overdue','Status'],payables.map(function(p){return [p.name,p.amount.toFixed(2),p.daysOver.toString(),agingBucket(p.daysOver)];}));
+  } else {
+    var text='AP AGING REPORT\n'+'═'.repeat(40)+'\n';
+    payables.forEach(function(p){text+=p.name+' | $'+p.amount.toFixed(2)+' | '+p.daysOver+' days | '+agingBucket(p.daysOver)+'\n';});
+    text+='─'.repeat(40)+'\nTOTAL: $'+payables.reduce(function(s,p){return s+p.amount;},0).toFixed(2)+'\n';
+    exportReportClipboard(text);
+  }
 }
 
 /* ====================================================
@@ -36202,8 +36182,32 @@ function renderReport_trialbalance(container){
   requestAnimationFrame(function(){var items=container.querySelectorAll('.glass-card,.dash-hero');items.forEach(function(el,i){el.style.opacity='0';el.style.transform='translateY(8px)';el.style.animation='helixAppear 0.3s cubic-bezier(0.16,1,0.3,1) '+i*0.05+'s forwards';});});
 }
 function exportTrialBalanceReport(mode){
-  if(mode==='csv'){var rows=[];exportReportCSV('Trial-Balance',['Account','Debit','Credit'],rows);}
-  else{exportReportClipboard('TRIAL BALANCE\n');}
+  var accounts={};
+  var rev=(S.invoices||[]).filter(function(i){return i.status==='paid';}).reduce(function(s,i){return s+(i.total||0);},0);
+  accounts['Revenue']={name:'Revenue',debit:0,credit:rev};
+  var catTotals={};
+  (S.expenses||[]).forEach(function(e){var c=e.category||'other';catTotals[c]=(catTotals[c]||0)+(e.amount||0);});
+  Object.entries(catTotals).forEach(function(pair){
+    var catInfo=EXPENSE_CATEGORIES.find(function(c){return c.value===pair[0];})||{label:pair[0]};
+    accounts['Expense: '+catInfo.label]={name:'Expense: '+catInfo.label,debit:pair[1],credit:0};
+  });
+  var bs=S.balanceSheet||{assets:{current:[],fixed:[]},liabilities:{current:[],longTerm:[]},equity:[]};
+  (bs.assets.current||[]).concat(bs.assets.fixed||[]).forEach(function(a){accounts['Asset: '+a.name]={name:'Asset: '+a.name,debit:a.amount||0,credit:0};});
+  (bs.liabilities.current||[]).concat(bs.liabilities.longTerm||[]).forEach(function(l){accounts['Liability: '+l.name]={name:'Liability: '+l.name,debit:0,credit:l.amount||0};});
+  (bs.equity||[]).forEach(function(e){accounts['Equity: '+e.name]={name:'Equity: '+e.name,debit:0,credit:e.amount||0};});
+  var rows=Object.values(accounts);
+  var totalDebits=rows.reduce(function(s,r){return s+r.debit;},0);
+  var totalCredits=rows.reduce(function(s,r){return s+r.credit;},0);
+  if(mode==='csv'){
+    var csvRows=rows.map(function(r){return [r.name,r.debit>0?r.debit.toFixed(2):'',r.credit>0?r.credit.toFixed(2):''];});
+    csvRows.push(['TOTALS',totalDebits.toFixed(2),totalCredits.toFixed(2)]);
+    exportReportCSV('Trial-Balance',['Account','Debit','Credit'],csvRows);
+  } else {
+    var text='TRIAL BALANCE\n'+'═'.repeat(40)+'\n';
+    rows.forEach(function(r){text+=r.name+' | Debit: '+(r.debit>0?'$'+r.debit.toFixed(2):'')+' | Credit: '+(r.credit>0?'$'+r.credit.toFixed(2):'')+'\n';});
+    text+='─'.repeat(40)+'\nTotal Debits: $'+totalDebits.toFixed(2)+' | Total Credits: $'+totalCredits.toFixed(2)+'\n';
+    exportReportClipboard(text);
+  }
 }
 
 /* ====================================================
@@ -37019,6 +37023,7 @@ function renderReport_recurringRevenue(container){
   html += '<div class="dash-hero"><div class="dash-hero-label">Recurring Revenue</div>';
   html += '<div class="dash-hero-value hero-3d positive helix-count-glow" style="font-size:42px">'+fmt$(mrr.mrr)+'</div>';
   html += '<div class="dash-hero-trend">MRR · '+fmt$(mrr.arr)+' ARR · '+mrr.count+' recurring invoices</div></div>';
+  html += _reportExportBtns('exportRecurringRevenueReport');
   html += '<div class="dash-section">Detected Subscriptions (Outgoing)</div>';
   if(subs.length===0) html += '<div style="color:var(--gray-light);font-size:11px;padding:12px">No recurring charges detected</div>';
   subs.forEach(function(s){
@@ -37030,6 +37035,24 @@ function renderReport_recurringRevenue(container){
   container.innerHTML = html;
   requestAnimationFrame(function(){var items=container.querySelectorAll('.drill-card,.glass-card,.dash-hero');items.forEach(function(el,i){el.style.opacity='0';el.style.transform='translateY(8px)';el.style.animation='helixAppear 0.3s cubic-bezier(0.16,1,0.3,1) '+i*0.04+'s forwards';});});
 }
+function exportRecurringRevenueReport(mode){
+  var mrr=getMonthlyRecurringRevenue();
+  var subs=detectSubscriptions();
+  var totalSubMonthly=subs.reduce(function(s,sub){return s+sub.monthlyEquiv;},0);
+  if(mode==='csv'){
+    var csvRows=[['MRR (Income)',mrr.mrr.toFixed(2)],['ARR (Income)',mrr.arr.toFixed(2)],['Recurring Invoices',mrr.count.toString()]];
+    subs.forEach(function(s){csvRows.push([s.name+' (Sub)',s.amount.toFixed(2),s.frequency,s.monthlyEquiv.toFixed(2)+'/mo']);});
+    csvRows.push(['Total Subscriptions (Outgoing)',totalSubMonthly.toFixed(2)]);
+    csvRows.push(['Net Recurring (MRR - Subs)',(mrr.mrr-totalSubMonthly).toFixed(2)]);
+    exportReportCSV('Recurring-Revenue',['Item','Amount','Frequency','Monthly Equiv'],csvRows);
+  } else {
+    var text='RECURRING REVENUE\n'+'═'.repeat(40)+'\n';
+    text+='MRR: $'+mrr.mrr.toFixed(2)+' | ARR: $'+mrr.arr.toFixed(2)+' | '+mrr.count+' recurring invoices\n';
+    if(subs.length>0){text+='\nSubscriptions (Outgoing):\n';subs.forEach(function(s){text+=s.name+' | $'+s.amount.toFixed(2)+' '+s.frequency+' | $'+s.monthlyEquiv.toFixed(2)+'/mo\n';});}
+    text+='─'.repeat(40)+'\nTotal Subs: $'+totalSubMonthly.toFixed(2)+'/mo\nNet Recurring: $'+(mrr.mrr-totalSubMonthly).toFixed(2)+'/mo\n';
+    exportReportClipboard(text);
+  }
+}
 
 // ── REPORTS: Cash flow forecast report ──
 function renderReport_cashForecast(container){
@@ -37040,6 +37063,7 @@ function renderReport_cashForecast(container){
   html += '<div class="dash-hero"><div class="dash-hero-label">90-Day Cash Forecast</div>';
   html += '<div class="dash-hero-value hero-3d '+(projected90>=0?'positive':'negative')+' helix-count-glow" style="font-size:42px">'+(projected90>=0?'':'-')+fmt$(Math.abs(projected90))+'</div>';
   html += '<div class="dash-hero-trend">projected balance in 90 days</div></div>';
+  html += _reportExportBtns('exportCashForecastReport');
   if(data.length>=2){
     html += '<div class="glass-card" style="padding:16px;margin-bottom:16px"><div style="font-size:10px;color:var(--cyan);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px;font-family:Oswald">Cash Trajectory</div>';
     html += renderSpendLine(data,280,100,'var(--green)')+'</div>';
@@ -37054,6 +37078,19 @@ function renderReport_cashForecast(container){
   container.innerHTML = html;
   setTimeout(animateHeroNumbers,50);
   requestAnimationFrame(function(){var items=container.querySelectorAll('.drill-card,.glass-card,.dash-hero');items.forEach(function(el,i){el.style.opacity='0';el.style.transform='translateY(8px)';el.style.animation='helixAppear 0.3s cubic-bezier(0.16,1,0.3,1) '+i*0.04+'s forwards';});});
+}
+function exportCashForecastReport(mode){
+  var data=getSmartCashForecast(90);
+  var current=data.length>0?data[0].value:0;
+  var projected90=data.length>0?data[data.length-1].value:0;
+  if(mode==='csv'){
+    exportReportCSV('Cash-Forecast',['Period','Projected Balance'],data.map(function(d){return [d.label||'',d.value.toFixed(2)];}));
+  } else {
+    var text='90-DAY CASH FORECAST\n'+'═'.repeat(40)+'\n';
+    text+='Current: $'+current.toFixed(2)+'\nProjected (90 days): $'+projected90.toFixed(2)+'\n\n';
+    data.forEach(function(d){text+=(d.label||'')+' | $'+d.value.toFixed(2)+'\n';});
+    exportReportClipboard(text);
+  }
 }
 
 // ── REPORTS: Profitability heatmap report ──
@@ -43283,231 +43320,6 @@ function setContactsFilter(filter){
 }
 
 // ============================================
-// FLAVORS - 16 Total
-// ============================================
-const FLAVORS=[
-  // Classics (8)
-  {name:'Vanilla',emoji:'🍦',cat:'Classic'},
-  {name:'Chocolate',emoji:'🍫',cat:'Classic'},
-  {name:'Strawberry',emoji:'🍓',cat:'Classic'},
-  {name:'Cookies & Cream',emoji:'🍪',cat:'Classic'},
-  {name:'Mint Chip',emoji:'🌿',cat:'Classic'},
-  {name:'Peanut Butter Cup',emoji:'🥜',cat:'Classic'},
-  {name:'Salted Caramel',emoji:'🧂',cat:'Classic'},
-  {name:'Butterbrickle',emoji:'🧈',cat:'Classic'},
-  // Signatures (5)
-  {name:'Foxy Brown',emoji:'🦊',cat:'Signature',desc:'Cinnamon cheesecake'},
-  {name:'Black Coffee',emoji:'☕',cat:'Signature',desc:'Affogato perfect'},
-  {name:'Thai Iced Tea',emoji:'🧋',cat:'Signature',desc:'Affogato perfect'},
-  {name:'Melted Brownie',emoji:'🟫',cat:'Signature'},
-  {name:'Lemons',emoji:'🍋',cat:'Signature'},
-  // Heat (3)
-  {name:'El Chupacabra',emoji:'🔥',cat:'Heat',desc:'Mexican chocolate + chili'},
-  {name:'Strawbañero',emoji:'🌶️',cat:'Heat',desc:'Strawberry + habanero'},
-  {name:'Honey Hotness',emoji:'🍯',cat:'Heat'}
-];
-
-function renderFlavors(){
-  const cats=['Classic','Signature','Heat'];
-  const catColors={Classic:'var(--cyan)',Signature:'var(--purple)',Heat:'var(--red)'};
-  
-  // Initialize inventory if not exists
-  if(!S.inventory){
-    S.inventory={};
-    FLAVORS.forEach(f=>S.inventory[f.name]=0);
-  }
-  
-  let h='';
-  let totalBarrels=0;
-  let lowStock=[];
-  
-  cats.forEach(cat=>{
-    const flavs=FLAVORS.filter(f=>f.cat===cat);
-    h+=`<div style="font-family:Oswald;font-size:14px;color:${catColors[cat]};margin:12px 0 8px;letter-spacing:.1em">${cat.toUpperCase()}</div>`;
-    
-    h+=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px">`;
-    flavs.forEach(f=>{
-      const count=S.inventory[f.name]||0;
-      totalBarrels+=count;
-      const isLow=count<3&&count>0;
-      const isEmpty=count===0;
-      if(isLow||isEmpty)lowStock.push(f.name);
-      
-      const borderColor=isEmpty?'var(--gray-faint)':isLow?'var(--red)':catColors[cat];
-      const bgColor=isEmpty?'var(--gray-mid)':isLow?'var(--red-dim)':'var(--gray-mid)';
-      
-      h+=`<div style="background:${bgColor};border-radius:8px;padding:10px;border-left:3px solid ${borderColor};display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div style="font-weight:600;font-size:13px">${f.emoji} ${f.name}</div>
-          ${isLow?'<div style="font-size:10px;color:var(--red)">LOW STOCK</div>':''}
-        </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <button onclick="adjInv('${f.name}',-1)" style="width:24px;height:24px;border-radius:4px;border:none;background:var(--gray-faint);color:var(--white);cursor:pointer">-</button>
-          <span style="font-family:Oswald;font-size:18px;min-width:24px;text-align:center;color:${isEmpty?'var(--gray-light)':isLow?'var(--red)':'var(--amber)'}">${count}</span>
-          <button onclick="adjInv('${f.name}',1)" style="width:24px;height:24px;border-radius:4px;border:none;background:var(--amber);color:var(--black);cursor:pointer">+</button>
-        </div>
-      </div>`;
-    });
-    h+=`</div>`;
-  });
-  
-  // Summary
-  document.getElementById('invTotal').textContent=totalBarrels;
-  document.getElementById('invLow').textContent=lowStock.length;
-  
-  // Pairing guide
-  h+=`<div style="margin-top:16px;padding:12px;background:var(--purple-dim);border:1px solid var(--purple);border-radius:10px">
-    <div style="font-weight:700;color:var(--purple);margin-bottom:6px;font-size:13px">🎯 Pairing Guide</div>
-    <div style="font-size:11px;color:var(--gray-light);line-height:1.4">
-      <b>Pizza:</b> Butterbrickle, Salted Caramel, Foxy Brown<br>
-      <b>Affogato:</b> Black Coffee, Thai Iced Tea<br>
-      <b>BBQ:</b> El Chupacabra, Vanilla, Honey Hotness
-    </div>
-  </div>`;
-  
-  document.getElementById('flavorsBody').innerHTML=h;
-}
-
-function adjInv(name,delta){
-  if(!S.inventory)S.inventory={};
-  S.inventory[name]=(S.inventory[name]||0)+delta;
-  if(S.inventory[name]<0)S.inventory[name]=0;
-  save();
-  renderFlavors();
-}
-
-// Stock panel tab switching (Inventory / Production)
-let stockTab = 'inventory';
-
-function showStockTab(tab){
-  stockTab = tab;
-  
-  // Update tab buttons
-  document.getElementById('tabInventory').classList.toggle('active', tab === 'inventory');
-  document.getElementById('tabProduction').classList.toggle('active', tab === 'production');
-  
-  // Show/hide views
-  document.getElementById('viewInventory').classList.toggle('hidden', tab !== 'inventory');
-  document.getElementById('viewProduction').classList.toggle('hidden', tab !== 'production');
-  
-  // Render the appropriate view
-  if(tab === 'inventory'){
-    renderFlavors();
-  } else {
-    renderProd();
-  }
-}
-
-// ============================================
-// BEANS - 4 SKUs via DripShipper
-// ============================================
-const BEANS=[
-  {id:'b1',name:'Nubia',emoji:'🌍',desc:'Smooth, chocolate notes, Ethiopian origin',price:18},
-  {id:'b2',name:'Axum',emoji:'☀️',desc:'Bright, fruity, light roast',price:18},
-  {id:'b3',name:'Truckstop',emoji:'🚚',desc:'Bold, classic diner coffee, dark roast',price:16},
-  {id:'b4',name:'Whiskey Barrel',emoji:'🥃',desc:'Oak-aged, smooth caramel finish',price:22}
-];
-
-function renderBeans(){
-  S.beans=S.beans||{subs:0};
-  
-  const subs=S.beans.subs||0;
-  const mrr=subs*18; // avg $18/sub
-  
-  document.getElementById('beansSubs').textContent=subs;
-  document.getElementById('beansMRR').textContent='$'+mrr;
-  
-  let h='';
-  
-  // Subscription tracker
-  h+=`<div class="p-card" style="border-left-color:var(--orange);margin-bottom:16px">
-    <div class="p-card-top">
-      <div class="p-card-title">📈 Subscription Goal</div>
-      <div class="p-card-badge" style="background:var(--orange-dim);color:var(--orange)">${subs}/30</div>
-    </div>
-    <div style="height:8px;background:var(--gray-faint);border-radius:4px;margin:10px 0">
-      <div style="height:100%;width:${Math.min(100,Math.round((subs/30)*100))}%;background:linear-gradient(90deg,var(--orange),var(--amber));border-radius:4px"></div>
-    </div>
-    <div class="p-card-actions">
-      <button class="p-btn small danger" onclick="adjSubs(-1)">-1</button>
-      <button class="p-btn small success" onclick="adjSubs(1)">+1 Sub</button>
-      <button class="p-btn small secondary" onclick="adjSubs(5)">+5</button>
-    </div>
-  </div>`;
-  
-  // SKUs
-  h+=`<div style="font-family:Oswald;font-size:14px;color:var(--orange);margin:12px 0 8px;letter-spacing:.1em">4 ROASTS</div>`;
-  
-  BEANS.forEach(b=>{
-    h+=`<div class="p-card" style="border-left-color:var(--orange)">
-      <div class="p-card-top">
-        <div class="p-card-title">${b.emoji} ${b.name}</div>
-        <div class="p-card-badge" style="background:var(--orange-dim);color:var(--orange)">$${b.price}</div>
-      </div>
-      <div class="p-card-meta">${b.desc}</div>
-    </div>`;
-  });
-  
-  document.getElementById('beansBody').innerHTML=h;
-}
-
-function adjSubs(n){
-  S.beans=S.beans||{subs:0};
-  S.beans.subs=(S.beans.subs||0)+n;
-  if(S.beans.subs<0)S.beans.subs=0;
-  save();renderBeans();
-  toast(n>0?'☕ Sub added!':'Adjusted');
-}
-
-// ============================================
-// STREAMS - 7 Revenue Channels
-// ============================================
-const STREAMS=[
-  {name:'Wholesale',target:'$3-10K/mo',desc:'Pizza, coffee, BBQ, hotels',color:'var(--purple)',icon:'🏪',link:''},
-  {name:'Coffee Beans',target:'$1.5K/mo',desc:'4 SKUs via DripShipper subscriptions',color:'var(--orange)',icon:'☕',link:'https://dripshipper.com'},
-  {name:'Coffee Wares',target:'$16K liquidate',desc:'700 filters, grinders, cups, etc',color:'var(--teal)',icon:'📦',link:'https://facebook.com/marketplace'},
-  {name:'Email/D2C',target:'$2-12K Month 1',desc:'31K list via Square reactivation',color:'var(--cyan)',icon:'✉️',link:''},
-  {name:'Catering',target:'$10K pipeline',desc:'Corporate events, weddings',color:'var(--pink)',icon:'🎪',link:'https://order.smithcanon.com'},
-  {name:'Schools',target:'Bulk barrels',desc:'APS portal for Aurora schools',color:'var(--lime)',icon:'🏫',link:'https://schools.smithcanon.com'},
-  {name:'Pop-ups',target:'Variable',desc:'Zoo Bar Lincoln, farmers markets',color:'var(--amber)',icon:'🎉',link:'https://event.smithcanon.com'}
-];
-
-function renderStreams(){
-  let h=`<div style="font-size:12px;color:var(--gray-light);margin-bottom:16px;text-align:center">7 revenue channels to hit $5K+/month</div>`;
-  
-  STREAMS.forEach(s=>{
-    h+=`<div class="p-card" style="border-left-color:${s.color}">
-      <div class="p-card-top">
-        <div class="p-card-title">${s.icon} ${s.name}</div>
-        <div class="p-card-badge" style="background:${s.color}20;color:${s.color}">${s.target}</div>
-      </div>
-      <div class="p-card-meta">${s.desc}</div>
-      ${s.link?`<div class="p-card-actions"><a href="${s.link}" target="_blank" class="p-btn small secondary" style="text-decoration:none">Open →</a></div>`:''}
-    </div>`;
-  });
-  
-  // Quick stats
-  h+=`<div style="margin-top:20px;padding:14px;background:var(--green-dim);border:1px solid var(--green);border-radius:10px">
-    <div style="font-weight:700;color:var(--green);margin-bottom:8px">💰 90-Day Target</div>
-    <div style="font-size:13px;color:var(--gray-light);line-height:1.6">
-      <b>Month 1:</b> $2-12K from email reactivation<br>
-      <b>Month 2-3:</b> 20+ wholesale accounts<br>
-      <b>Ongoing:</b> $5K/month recurring revenue
-    </div>
-  </div>`;
-  
-  document.getElementById('streamsBody').innerHTML=h;
-}
-
-// Add render calls for beans and streams
-function renderBeansPanel(){renderBeans()}
-function renderStreamsPanel(){renderStreams()}
-
-
-
-// ============================================
-
-// ============================================
 // OUTREACH - Wheel-based Communication Center
 // ============================================
 
@@ -44656,105 +44468,6 @@ function toggleSentLog(){
   }
 }
 
-function renderProd(){
-  let made=0;for(let k in S.production)made+=S.production[k]||0;
-  
-  // Update stats in both locations (old panel if exists, new tab)
-  const prodMade = document.getElementById('prodMade');
-  const prodLeft = document.getElementById('prodLeft');
-  const prodMade2 = document.getElementById('prodMade2');
-  const prodLeft2 = document.getElementById('prodLeft2');
-  
-  if(prodMade) prodMade.textContent=made;
-  if(prodLeft) prodLeft.textContent=Math.max(0,40-made);
-  if(prodMade2) prodMade2.textContent=made;
-  if(prodLeft2) prodLeft2.textContent=Math.max(0,40-made);
-  
-  const days=['Mon','Tue','Wed','Thu','Fri'];
-  const now=new Date();
-  const ws=new Date(now);ws.setDate(now.getDate()-now.getDay()+1);
-  
-  let h='<div style="font-family:Oswald;font-size:14px;color:var(--lime);margin-bottom:8px;letter-spacing:.1em">THIS WEEK</div>';
-  
-  // Week grid
-  h+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px">';
-  for(let i=0;i<5;i++){
-    const d=new Date(ws);d.setDate(ws.getDate()+i);
-    const ds=d.toISOString().split('T')[0];
-    const isToday=ds===now.toISOString().split('T')[0];
-    const count=S.production[ds]||0;
-    
-    h+=`<div style="background:var(--gray-mid);border-radius:8px;padding:10px;text-align:center;${isToday?'border:2px solid var(--amber)':''}">
-      <div style="font-size:10px;color:var(--gray-light)">${days[i]}</div>
-      <div style="font-family:Oswald;font-size:24px;font-weight:700;color:${count>=8?'var(--green)':count>0?'var(--amber)':'var(--gray-light)'}">${count}</div>
-      <div style="display:flex;gap:4px;justify-content:center;margin-top:6px">
-        <button onclick="logP('${ds}',-4)" style="width:24px;height:24px;border-radius:4px;background:var(--red-dim);color:var(--red);border:none;cursor:pointer;font-weight:700">-</button>
-        <button onclick="logP('${ds}',4)" style="width:24px;height:24px;border-radius:4px;background:var(--green-dim);color:var(--green);border:none;cursor:pointer;font-weight:700">+</button>
-      </div>
-    </div>`;
-  }
-  h+='</div>';
-  
-  // Progress bar
-  const pct=Math.min(100,Math.round((made/40)*100));
-  h+=`<div style="margin-bottom:16px">
-    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray-light);margin-bottom:4px">
-      <span>${made} barrels made</span>
-      <span>${pct}% of 40</span>
-    </div>
-    <div style="height:8px;background:var(--gray-faint);border-radius:4px">
-      <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,var(--red),var(--amber),var(--green));border-radius:4px;transition:width .3s"></div>
-    </div>
-  </div>`;
-  
-  // Render to new location (prodBody2 in Stock panel)
-  const prodBody2 = document.getElementById('prodBody2');
-  if(prodBody2) prodBody2.innerHTML=h;
-  
-  // Also render to old location if it exists (for backwards compatibility)
-  const prodBody = document.getElementById('prodBody');
-  if(prodBody) prodBody.innerHTML=h;
-}
-
-function logP(d,n){
-  S.production[d]=(S.production[d]||0)+n;
-  if(S.production[d]<0)S.production[d]=0;
-  save();renderProd();updStats();
-  toast(n>0?'🧈 +4 barrels':'Adjusted');
-}
-
-function adjProdInv(f,n){
-  S.inventory=S.inventory||{};
-  S.inventory[f]=(S.inventory[f]||0)+n;
-  if(S.inventory[f]<0)S.inventory[f]=0;
-  save();renderProd();
-  toast(n>0?'📦 Added':'Removed');
-}
-
-function scheduleProduction(){
-  const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);
-  const ds=tomorrow.toISOString().split('T')[0];
-  
-  // Check if already scheduled
-  const exists=S.events.find(e=>e.date===ds&&e.type==='production');
-  if(exists){
-    toast('Already scheduled for tomorrow');
-    return;
-  }
-  
-  const evtId=uid();
-  S.events.push({
-    id:evtId,
-    date:ds,
-    time:'14:00',
-    type:'production',
-    title:'Production 2-6pm',
-    notes:'VB-60 batch run'
-  });
-  
-  save('events', evtId, 'upsert');updDisplay();
-  toast('📅 Production scheduled');
-}
 
 function toast(msg){
   const t=document.getElementById('toast');
@@ -57041,8 +56754,6 @@ function exportAllData(){
     events: S.events,
     tasks: S.tasks,
     notes: S.notes,
-    inventory: S.inventory,
-    production: S.production,
     customEventTypes: S.customEventTypes,
     bookingLinks: S.bookingLinks
   };
@@ -57074,8 +56785,6 @@ function importAllData(){
         if(data.events) S.events = data.events;
         if(data.tasks) S.tasks = data.tasks;
         if(data.notes) S.notes = data.notes;
-        if(data.inventory) S.inventory = data.inventory;
-        if(data.production) S.production = data.production;
         if(data.customEventTypes) S.customEventTypes = data.customEventTypes;
         if(data.bookingLinks) S.bookingLinks = data.bookingLinks;
         save();
