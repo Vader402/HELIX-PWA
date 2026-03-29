@@ -24522,7 +24522,7 @@ function renderProducts(){
           ${margin > 0 ? `<span>· ${margin}% margin</span>` : ''}
         </div>
         <div class="card-actions">
-          <button class="card-action email" onclick="event.stopPropagation();orderProduct('${p.id}')" title="Order">${SVG.cart || SVG.plus}</button>
+          <!-- orderProduct hidden until e-commerce ready -->
           <button class="card-action schedule" onclick="event.stopPropagation();scheduleRestock('${p.id}')" title="Restock">${SVG.calendar}</button>
           <button class="card-action notes" onclick="event.stopPropagation();noteForProduct('${p.id}')" title="Notes">${SVG.layers || '<svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>'}</button>
           <button class="card-action tasks" onclick="event.stopPropagation();taskForProduct('${p.id}')" title="Task">${SVG.check}</button>
@@ -24535,7 +24535,7 @@ function renderProducts(){
 }
 
 // Product card action stubs
-function orderProduct(id){ toast('Order product — coming soon'); }
+function orderProduct(id){ /* disabled until e-commerce ready */ }
 function scheduleRestock(id){ 
   const p = S.products.find(x => x.id === id);
   if(p){
@@ -24630,7 +24630,6 @@ function renderOrdersView(){
     body.innerHTML = `<div style="text-align:center;padding:60px 20px;color:var(--gray-light)">
       <div style="font-size:32px;margin-bottom:12px">🛒</div>
       <div>No active orders</div>
-      <button class="p-btn primary" style="margin-top:16px" onclick="createOrder()">Create Order</button>
     </div>`;
     return;
   }
@@ -24656,12 +24655,10 @@ function renderOrdersView(){
   body.innerHTML = html;
 }
 
-function createOrder(){
-  toast('Order creation coming soon');
+function createOrder(){ /* disabled until e-commerce ready */
 }
 
-function viewOrder(id){
-  toast('Order details coming soon');
+function viewOrder(id){ /* disabled until e-commerce ready */
 }
 
 function renderInvoicesView(){
@@ -25276,7 +25273,7 @@ function renderServices(){
       </div>
       <div class="card-meta">${s.description || 'No description'}</div>
       <div class="card-actions">
-        <button class="card-action email" onclick="event.stopPropagation();invoiceService('${s.id}')" title="Invoice">${SVG.email}</button>
+        <!-- invoiceService hidden until e-commerce ready -->
         <button class="card-action schedule" onclick="event.stopPropagation();scheduleService('${s.id}')" title="Schedule">${SVG.calendar}</button>
         <button class="card-action notes" onclick="event.stopPropagation();noteForService('${s.id}')" title="Notes">${'<svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>'}</button>
         <button class="card-action tasks" onclick="event.stopPropagation();logTimeForService('${s.id}')" title="Log Time">${SVG.clock || SVG.check}</button>
@@ -25288,7 +25285,7 @@ function renderServices(){
 }
 
 // Service card action stubs
-function invoiceService(id){ toast('Invoice — coming soon'); }
+function invoiceService(id){ /* disabled until e-commerce ready */ }
 function scheduleService(id){
   const s = S.services.find(x => x.id === id);
   if(s){
@@ -51896,7 +51893,7 @@ function saveQuestProgress(id){
         expenses: 'expenses', banking: 'banking', vault: 'vault', invoices: 'invoices', jobs: 'jobs'
       };
       if(typeof openPanel === 'function') openPanel(panelMap[destType] || destType);
-      if(typeof toast === 'function') toast(subKey + ' (coming soon)');
+      console.log('Crossroads: unhandled combo ' + subKey);
     }
   }
   
@@ -52275,7 +52272,7 @@ function saveQuestProgress(id){
     
     'note-crm/questIt': function(data){
       openPanel('crm');
-      toast('Quest system — coming soon');
+      /* Quest system — Phase 2 */
     },
     
     // ═══ NOTE → TASKS ═══
@@ -52521,7 +52518,7 @@ function saveQuestProgress(id){
     
     'prospect-tasks/startQuest': function(data){
       openPanel('missions');
-      toast('Quest system — coming soon');
+      /* Quest system — Phase 2 */
     },
     
     // ═══ PROSPECT → NOTES ═══
@@ -52795,7 +52792,7 @@ function saveQuestProgress(id){
     
     'task-crm/questIt': function(data){
       openPanel('crm');
-      toast('Quest system — coming soon');
+      /* Quest system — Phase 2 */
     },
     
     // ═══ TASK → NOTES ═══
